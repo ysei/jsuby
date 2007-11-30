@@ -1,0 +1,42 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testPuts() {
+
+	ruby.stdout = "";
+	ruby.exec("puts");
+	assertEquals("puts 1", ruby.stdout, "\n");
+
+	ruby.stdout = "";
+	ruby.exec("puts 999");
+	assertEquals("puts 2", ruby.stdout, "999\n");
+
+	ruby.stdout = "";
+	ruby.exec('puts "abc"');
+	assertEquals("puts 3", ruby.stdout, "abc\n");
+
+	ruby.stdout = "";
+	ruby.exec('puts "abc", 999');
+	assertEquals("puts 4", ruby.stdout, "abc\n999\n");
+
+}
+
+
+</script>
+</head>
+</html>

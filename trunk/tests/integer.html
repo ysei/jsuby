@@ -1,0 +1,43 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+function testBinominalCalc() {
+	assertEquals("calc 1", ruby.exec("3+4"),  7);
+	assertEquals("calc 2", ruby.exec("3*4"), 12);
+	assertEquals("calc 3", ruby.exec("3-4"), -1);
+	assertEquals("calc 4", ruby.exec("3/4"), 0);
+	//assertEquals("calc 5", ruby.exec("3**4"), 81);
+	assertFalse("calc 6", ruby.exec("3==4") );
+	assertTrue("calc 7", ruby.exec("4==4") );
+}
+function testPolynominalCalc() {
+	assertEquals("calc 1", ruby.exec("2+3+4"),  9);
+	assertEquals("calc 2", ruby.exec("2+3*4"), 14);
+	assertEquals("calc 3", ruby.exec("2*3*4"), 24);
+	assertEquals("calc 4", ruby.exec("2*3+4"), 10);
+	assertEquals("calc 5", ruby.exec("(2+3)*4"), 20);
+
+	assertEquals("calc 6", ruby.exec("1+2*(((3-4)*5+6)*7-8)+9"), 8);
+}
+
+function testMethod() {
+	assertEquals("method 1", ruby.exec("65.chr"),  "A");
+}
+
+</script>
+</head>
+</html>

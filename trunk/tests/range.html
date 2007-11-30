@@ -1,0 +1,33 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testRange() {
+	assertArrayEquals("rect 1", ruby.exec("(0..0)"), [0]);
+	assertArrayEquals("rect 2", ruby.exec("(1..1)"), [1]);
+	assertArrayEquals("rect 3", ruby.exec("(1..9)"), [1,2,3,4,5,6,7,8,9]);
+	assertArrayEquals("rect 4", ruby.exec("(1..0)"), []);
+}
+
+function testEach() {
+	assertArrayEquals("each 1", ruby.exec("(1..10).each{}"), [1,2,3,4,5,6,7,8,9,10]);
+	assertEquals("each 2", ruby.exec("s=0;(1..10).each{|x|s=s+x};s"), 55);
+}
+
+</script>
+</head>
+</html>

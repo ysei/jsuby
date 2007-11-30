@@ -1,0 +1,88 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+<title>JSRuby Check Page - Ruby for Javascript</title>
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<!-- script type="text/javascript" src="ieerbug/ieerbug.js"></script -->
+
+<script type="text/javascript" src="src/head.js"></script>
+<script type="text/javascript" src="src/node.js"></script>
+<script type="text/javascript" src="src/builtinobjects.js"></script>
+<script type="text/javascript" src="src/parse.js"></script>
+<script type="text/javascript" src="src/interpreter.js"></script>
+<script type="text/javascript" src="src/builtinmethods.js"></script>
+<script type="text/javascript" src="src/util.js"></script>
+
+</head>
+<body>
+
+<h1>JSRuby Check - Ruby for Javascript</h1>
+
+
+<textarea id='script_area' rows='8' cols='70'>
+(1..10).each{|x| puts if x % 2 == 0 then "even" else "odd" end }
+</textarea>
+<input type='button' value='parse & execute' onclick='javascript:execute();' /><br />
+&darr; parse
+<div style='border:1px solid black;' id='nodetree_area'>(parsing...)</div>
+&darr; execute
+<div style='border:1px solid black;' id='console_area'>(console)<br /></div>
+
+
+
+<script type="text/javascript">
+var FIREFOX = navigator.userAgent.indexOf("Firefox")>0;
+function $(id) { return document.getElementById(id) }
+var parser = new RubyEngine.Parser();
+var ruby = new RubyEngine.Interpreter();
+
+function execute() {
+	$("console_area").innerHTML = '';
+
+	var text = $("script_area").value.replace(/^\n+/, "").replace(/([^\n])$/, "$&\n")
+	var nodetree = parser.parse(text);
+	var div = $("nodetree_area")
+	if(FIREFOX){div.textContent = nodetree.toSource();}else{div.innerText = nodetree.toSource();}
+
+	ruby.run(nodetree);
+	$("console_area").innerHTML = ruby.stdout.replace(/\n/g,"<br />")
+}
+</script>
+
+
+
+<h1>JSirb - JSRuby Console</h1>
+<div id="jsirb" style="width:640px;height:400px;overflow:auto;border:1px solid #333;"></div><br />
+<input id="jsirbinput" style="width:640px;" />
+
+<script type="text/javascript">
+String.prototype.toh = function(){ return this.replace(/</g, "&lt;").replace(/\n/g, "<br />"); }
+
+function cmdentry(evt) {
+	if (!FIREFOX) evt = event;
+	if (evt.keyCode==13) {
+		var jsirb = $('jsirb');
+		var cmd = $('jsirbinput').value;
+		var code = parser.parse(cmd);
+		if (code && parser.isfull()) {
+			ruby.stdout = "";
+			var ret = ruby.run(code);
+			if (typeof(ret)=="string") ret = ret.toh();
+			jsirb.innerHTML += cmd.toh() + "<br />" + ruby.stdout.toh() + "=> " + ret + "<br />";
+		} else {
+			jsirb.innerHTML += cmd.toh() + "<br />" + "Syntax error.<br />";
+		}
+		var h = jsirb.scrollHeight - jsirb.clientHeight;
+		if (h>0) jsirb.scrollTop = h;
+
+		$('jsirbinput').value = '';
+	}
+
+}
+$('jsirbinput').onkeypress = cmdentry;
+</script>
+
+
+<div style="float:right">(c)2007 Nakatani Shuyo / Cybozu Labs, inc.</div>
+
+</body>
+</html>

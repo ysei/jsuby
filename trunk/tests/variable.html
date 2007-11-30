@@ -1,0 +1,38 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testLiteral() {
+	assertEquals("literal 1", ruby.exec("0"),  0);
+	assertEquals("literal 2", ruby.exec("3"),  3);
+	//assertEquals("literal 3", ruby.exec("-3"), -3);
+	assertEquals("literal 4", ruby.exec("\"3\""), "3");
+	assertEquals("literal 5", ruby.exec("'3'"), "3");
+	assertEquals("literal 6", ruby.exec("'日本語'"), "日本語");
+	//assertEquals("literal 7", ruby.exec("nil"), null);
+}
+
+function testSubstitute() {
+	assertEquals("substitute 1", ruby.exec("x=3;x+1"),  4);
+	assertEquals("substitute 2", ruby.exec("x=y=3;x+y"),  6);
+	assertEquals("substitute 3", ruby.exec("x=3; y=4; z=x*y; z"),  12);
+}
+
+
+</script>
+</head>
+</html>
