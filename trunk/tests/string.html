@@ -15,28 +15,19 @@
 <script language="JavaScript" type="text/javascript">
 
 var ruby = new RubyEngine.Interpreter();
-function testBinominalCalc() {
-	assertEquals("calc 1", ruby.exec("3+4"),  7);
-	assertEquals("calc 2", ruby.exec("3*4"), 12);
-	assertEquals("calc 3", ruby.exec("3-4"), -1);
-	assertEquals("calc 4", ruby.exec("3/4"), 0);
-	//assertEquals("calc 5", ruby.exec("3**4"), 81);
-	assertFalse("calc 6", ruby.exec("3==4") );
-	assertTrue("calc 7", ruby.exec("4==4") );
-}
-function testPolynominalCalc() {
-	assertEquals("calc 1", ruby.exec("2+3+4"),  9);
-	assertEquals("calc 2", ruby.exec("2+3*4"), 14);
-	assertEquals("calc 3", ruby.exec("2*3*4"), 24);
-	assertEquals("calc 4", ruby.exec("2*3+4"), 10);
-	assertEquals("calc 5", ruby.exec("(2+3)*4"), 20);
 
-	assertEquals("calc 6", ruby.exec("1+2*(((3-4)*5+6)*7-8)+9"), 8);
+function testLiteral() {
+	assertEquals("literal 1", ruby.exec(" '' "), "");
+	assertEquals("literal 2", ruby.exec(' "" '), "");
+	assertEquals("literal 3", ruby.exec(" 'abc' "), "abc");
+	assertEquals("literal 4", ruby.exec(' "xyz" '), "xyz");
 }
 
-function testChr() {
-	assertEquals("chr 1", ruby.exec("65.chr"),  "A");
-	assertEquals("chr 2", ruby.exec(" x=97; x.chr"),  "a");
+function testReverse() {
+	assertEquals("reverse 1", ruby.exec(' "a".reverse '), "a");
+	assertEquals("reverse 2", ruby.exec(' "abc".reverse '), "cba");
+	assertEquals("reverse 3", ruby.exec(' "".reverse '), "");
+	assertEquals("reverse 4", ruby.exec(" x='ruby'; x.reverse "), "ybur");
 }
 
 </script>
