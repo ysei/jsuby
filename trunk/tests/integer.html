@@ -63,6 +63,20 @@ function testChr() {
 	assertEquals("chr 2", ruby.exec(" x=97; x.chr"),  "a");
 }
 
+function testUpto() {
+	ruby.stdout = "";
+	ruby.exec("1.upto(3) {|i| puts i}");
+	assertEquals("1.upto(3)", ruby.stdout, "1\n2\n3\n");
+
+	ruby.stdout = "";
+	ruby.exec("3.upto(1) {|i| puts i}");
+	assertEquals("3.upto(1)", ruby.stdout, "");
+
+	ruby.stdout = "";
+	ruby.exec("puts 3.upto(1) {|i| puts i}");
+	assertEquals("puts 3.upto(1)", ruby.stdout, "3\n");
+}
+
 </script>
 </head>
 </html>

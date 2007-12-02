@@ -49,6 +49,16 @@ RubyEngine.RubyObject.Numeric.prototype.eql = function(x){ return this.num == x.
 RubyEngine.RubyObject.Numeric.methods = {
   "chr": function(self, args, block) {
     return new RubyEngine.RubyObject.String( String.fromCharCode(self.num) );
+  },
+  "upto": function(self, args, block) {
+    if (!block) return null;
+    var varname;
+    if (block.vars) varname = block.vars[0].name;
+    for(var i=self.num; i<=args[0].num; i++) {
+    	if (varname) this.scope[0][varname] = new RubyEngine.RubyObject.Numeric(i);
+    	this.run(block.block);
+    }
+    return self;
   }
 };
 
