@@ -16,19 +16,25 @@
 
 var ruby = new RubyEngine.Interpreter();
 function testLiteral() {
-	assertEquals("hex", ruby.exec("0xfc84"),  64644);
-	assertEquals("hex", ruby.exec("0XFC84"),  64644);
+	assertEquals("hex", ruby.exec("0xfc84"),       64644);
+	assertEquals("hex", ruby.exec("0XFC84"),       64644);
+	assertEquals("hex", ruby.exec("-0xfc84"),     -64644);
 
-	assertEquals("dec", ruby.exec("52525"),  52525);
-	assertEquals("dec", ruby.exec("0d52525"),  52525);
-	assertEquals("dec", ruby.exec("0D52525"),  52525);
+	assertEquals("dec", ruby.exec("52525"),        52525);
+	assertEquals("dec", ruby.exec("-52525"),      -52525);
+	assertEquals("dec", ruby.exec("0d52525"),      52525);
+	assertEquals("dec", ruby.exec("0D52525"),      52525);
+	assertEquals("dec", ruby.exec("-0D52525"),    -52525);
+                                                  
+	assertEquals("oct", ruby.exec("0744"),         484);
+	assertEquals("oct", ruby.exec("-0744"),       -484);
+	assertEquals("oct", ruby.exec("0o744"),        484);
+	assertEquals("oct", ruby.exec("0O744"),        484);
+	assertEquals("oct", ruby.exec("-0O744"),      -484);
 
-	assertEquals("oct", ruby.exec("0744"),  484);
-	assertEquals("oct", ruby.exec("0o744"),  484);
-	assertEquals("oct", ruby.exec("0O744"),  484);
-
-	assertEquals("bin", ruby.exec("0b01101001"),  105);
-	assertEquals("bin", ruby.exec("0B01101001"),  105);
+	assertEquals("bin", ruby.exec("0b01101001"),   105);
+	assertEquals("bin", ruby.exec("0B01101001"),   105);
+	assertEquals("bin", ruby.exec("-0B01101001"), -105);
 }
 
 function testBinominalCalc() {
