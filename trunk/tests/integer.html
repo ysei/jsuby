@@ -35,6 +35,8 @@ function testLiteral() {
 	assertEquals("bin", ruby.exec("0b01101001"),   105);
 	assertEquals("bin", ruby.exec("0B01101001"),   105);
 	assertEquals("bin", ruby.exec("-0B01101001"), -105);
+
+	assertEquals("char", ruby.exec("?a"), 97);
 }
 
 function testBinominalCalc() {

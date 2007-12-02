@@ -213,6 +213,9 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		  i = parseInt(RegExp.$1.replace(/0d/i, '').replace(/0o/i, '0'));
     }
 		return new RubyEngine.RubyObject.Numeric(i);
+  } else if (this.body.match(/^[ \t]*\?(.)/)) { // ?a
+		this.body = RegExp.rightContext;
+		return new RubyEngine.RubyObject.Numeric(RegExp.$1.charCodeAt(0));
 	} else if (this.body.match(/^[ \t]*"((?:[^\\"]|\\.)*)"|^[ \t]*'((?:[^\\']|\\.)*)'/)) { //"
 		this.body = RegExp.rightContext;
 		return new RubyEngine.RubyObject.String(RegExp.$1 || RegExp.$2);
