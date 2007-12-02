@@ -201,13 +201,13 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		}
 		this.body = prebody;
 	}
-	if (this.body.match(/^[ \t]*(0x[0-9A-Fa-f]+|0b([01]+)|[0-9]+)/)) {
+	if (this.body.match(/^[ \t]*(0x[0-9A-F]+|0b([01]+)|0o?[0-7]+|(?:0d)?[0-9]+)/i)) {
 		this.body = RegExp.rightContext;
     var i;
     if (RegExp.$2) {
 		  i = parseInt(RegExp.$2, 2);
     } else {
-		  i = parseInt(RegExp.$1);
+		  i = parseInt(RegExp.$1.replace(/^0d/i, '').replace(/^0o/i, '0'));
     }
 		return new RubyEngine.RubyObject.Numeric(i);
 	} else if (this.body.match(/^[ \t]*"((?:[^\\"]|\\.)*)"|^[ \t]*'((?:[^\\']|\\.)*)'/)) { //"
