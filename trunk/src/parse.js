@@ -201,9 +201,15 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		}
 		this.body = prebody;
 	}
-	if (this.body.match(/^[ \t]*([0-9]+)/)) {
+	if (this.body.match(/^[ \t]*(0x[0-9A-Fa-f]+|0b([01]+)|[0-9]+)/)) {
 		this.body = RegExp.rightContext;
-		return new RubyEngine.RubyObject.Numeric(parseInt(RegExp.$1));
+    var i;
+    if (RegExp.$2) {
+		  i = parseInt(RegExp.$2, 2);
+    } else {
+		  i = parseInt(RegExp.$1);
+    }
+		return new RubyEngine.RubyObject.Numeric(i);
 	} else if (this.body.match(/^[ \t]*"((?:[^\\"]|\\.)*)"|^[ \t]*'((?:[^\\']|\\.)*)'/)) { //"
 		this.body = RegExp.rightContext;
 		return new RubyEngine.RubyObject.String(RegExp.$1 || RegExp.$2);

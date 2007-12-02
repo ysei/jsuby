@@ -15,6 +15,13 @@
 <script language="JavaScript" type="text/javascript">
 
 var ruby = new RubyEngine.Interpreter();
+function testLiteral() {
+	assertEquals("hex", ruby.exec("0xfc84"),  64644);
+	assertEquals("dec", ruby.exec("52525"),  52525);
+	assertEquals("oct", ruby.exec("0744"),  484);
+	assertEquals("bin", ruby.exec("0b01101001"),  105);
+}
+
 function testBinominalCalc() {
 	assertEquals("calc 1", ruby.exec("3+4"),  7);
 	assertEquals("calc 2", ruby.exec("3*4"), 12);
