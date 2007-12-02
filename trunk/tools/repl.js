@@ -25,6 +25,8 @@ function alert(st) {
 
 // do loop
 while (line = readline()) {
-  ruby.run(parser.parse(line))
+  var nodetree = parser.parse(line)
+  print(nodetree.toSource());
+  ruby.run(nodetree)
 }
 
