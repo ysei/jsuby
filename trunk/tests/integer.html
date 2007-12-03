@@ -44,7 +44,7 @@ function testBinominalCalc() {
 	assertEquals("calc 2", ruby.exec("3*4"), 12);
 	assertEquals("calc 3", ruby.exec("3-4"), -1);
 	assertEquals("calc 4", ruby.exec("3/4"), 0);
-	//assertEquals("calc 5", ruby.exec("3**4"), 81);
+	assertEquals("calc 5", ruby.exec("3**4"), 81);
 	assertFalse("calc 6", ruby.exec("3==4") );
 	assertTrue("calc 7", ruby.exec("4==4") );
 }

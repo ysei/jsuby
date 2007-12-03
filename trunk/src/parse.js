@@ -293,7 +293,7 @@ RubyEngine.Parser.prototype.comma = function() {
 }
 
 RubyEngine.Parser.prototype.operator = function() {
-	if (this.body.match(/^[ \t]*(\.\.|\+|\-|\*|\/|%|==)/)) {
+	if (this.body.match(/^[ \t]*(\.\.|\+|\-|\*{1,2}|\/|%|==|[<>]=?|&&|\|\||<<|>>)/)) {
 		this.body = RegExp.rightContext;
 		return new RubyEngine.Node.Operator(RegExp.$1);
 	}

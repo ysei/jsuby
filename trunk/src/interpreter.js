@@ -84,6 +84,10 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 				var a = stk.pop();
 				stk.push(stk.pop().mod(a));
 				break;
+			case "**":
+				var a = stk.pop();
+				stk.push(stk.pop().pow(a));
+				break;
 			case "..":
 				var to = stk.pop();
 				var from = stk.pop();

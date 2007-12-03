@@ -45,6 +45,7 @@ RubyEngine.RubyObject.Numeric.prototype.sub = function(x){ return new RubyEngine
 RubyEngine.RubyObject.Numeric.prototype.mul = function(x){ return new RubyEngine.RubyObject.Numeric(this.num * x.num); }
 RubyEngine.RubyObject.Numeric.prototype.div = function(x){ return new RubyEngine.RubyObject.Numeric(parseInt(this.num / x.num)); }
 RubyEngine.RubyObject.Numeric.prototype.mod = function(x){ return new RubyEngine.RubyObject.Numeric(this.num % x.num); }
+RubyEngine.RubyObject.Numeric.prototype.pow = function(x){ return new RubyEngine.RubyObject.Numeric(Math.pow(this.num, x.num)); }
 RubyEngine.RubyObject.Numeric.prototype.eql = function(x){ return this.num == x.num; }
 RubyEngine.RubyObject.Numeric.methods = {
   "chr": function(self, args, block) {
