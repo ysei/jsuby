@@ -36,6 +36,12 @@ function testReverse() {
 	assertEquals("reverse 4", ruby.exec(" x='ruby'; x.reverse "), "ybur");
 }
 
+function testBrackett() {
+	assertEquals("string[nth] 1", ruby.exec(' "ABC"[0] '), 65);
+	assertEquals("string[nth] 2", ruby.exec(' "ABC"[1] '), 66);
+	//assertEquals("string[nth] 3", ruby.exec(' "ABC"[-1] '), 67);
+}
+
 </script>
 </head>
 </html>

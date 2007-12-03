@@ -80,6 +80,9 @@ RubyEngine.RubyObject.String.methods = {
     var st = "";
     for(var i=self.str.length-1;i>=0;i--) st += self.str.charAt(i);
     return new RubyEngine.RubyObject.String(st);
+  },
+  "[]": function(self, args, block) {
+    return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(args[0]));
   }
 };
 

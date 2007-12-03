@@ -133,16 +133,29 @@ RubyEngine.Parser.prototype.blockvars = function() {
 	return null
 }
 
-//  Primary : Primary2 ('.'Operation ('(' Args ')')? ('{' ('|'Varname'|')? CompStmt '}')? )* 
+// Primary : Primary2 ( '[' Args ']' | '.'Operation ('(' Args ')')? ('{' ('|'Varname'|')? CompStmt '}')? )* 
+// # for removing left recursions of Primary in BNF of Ruby
 RubyEngine.Parser.prototype.primary = function() {
 //console.log(this.body);console.trace();if(!confirm("continue?")) exit();
 	var prim = this.primary2();
   while(prim != undefined) {
-		if (!this.body.match(/^[ \t]*\./)) return prim;
-
     var y, z;
     var prebody = this.body;
+
+		if (!this.body.match(/^[ \t]*(\.|\[)/)) return prim;
 		this.body = RegExp.rightContext;
+
+    // '[' Args ']'
+    if (RegExp.$1=='[') {
+      y = this.args();
+      if (y==undefined || !this.body.match(/^[ \t]*\]/)) {
+        this.body = prebody;
+        return prim;
+      }
+  		this.body = RegExp.rightContext;
+  		prim = new RubyEngine.Node.Method('[]', prim, y);
+      continue;
+    }
 
     // '.'Operation
 		if ((y=this.operation()) == undefined) {
