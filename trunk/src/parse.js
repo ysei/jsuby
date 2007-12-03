@@ -10,16 +10,15 @@ RubyEngine.Parser.prototype.parse = function(body) {
 
 //  CompStmt: Stmt (Term+ Stmt)*
 RubyEngine.Parser.prototype.compstmt = function() {
-	var x, y;
-	x=this.stmt();
-	if (x==null || typeof(x)=="undefined") return undefined;
+	var x;
+	if ((x=this.stmt())==undefined) return undefined;
 	var ret = [x];
 	var prebody = this.body;
-	while (x=this.term()) {
+	while (this.term()) {
 		while(this.term());
-		if (!(y=this.stmt())) break;
+		if (!(x=this.stmt())) break;
 		prebody = this.body;
-		ret.push(y);
+		ret.push(x);
 	}
 	this.body = prebody;
 	return ret;
@@ -33,8 +32,7 @@ RubyEngine.Parser.prototype.stmt = function() {
 //  Expr: Expr2 (if Expr2|unless Expr2|while Expr2)*
 RubyEngine.Parser.prototype.expr = function() {
 	var x, y;
-	x=this.expr2();
-	if (x==null || typeof(x)=="undefined") return undefined;
+	if ((x=this.expr2())==undefined) return undefined;
 	var ret = [x]
 	while (this.body.match(/^[ \t]*(if|unless|while|until)/)) {
 		var prebody = this.body;
@@ -51,12 +49,9 @@ RubyEngine.Parser.prototype.expr = function() {
 
 //  Expr2: Command | Arg 
 RubyEngine.Parser.prototype.expr2 = function() {
-	var x, y, z;
-	var prebody = this.body;
-	if (x=this.command()) return x;
-  x=this.arg()
-	if (x!=null && typeof(x)!="undefined") return x;
-	this.body = prebody;
+	var x;
+	if ((x=this.command())!=undefined) return x;
+	if ((x=this.arg())!=undefined) return x;
 	return undefined;
 }
 
@@ -68,8 +63,8 @@ RubyEngine.Parser.prototype.command = function() {
 		if (y=this.args()) return new RubyEngine.Node.Method(x, null, y);
 		this.body=prebody;
 	}
-  x=this.primary()
-	if (x!=null && typeof(x)!="undefined") {
+
+	if ((x=this.primary())!=undefined) {
 		if (this.body.match(/^[ \t]*\./)) {
 			this.body = RegExp.rightContext;
 			if ((y=this.operation()) && (z=this.args())) return new RubyEngine.Node.Method(y, x, z);
@@ -87,7 +82,7 @@ RubyEngine.Parser.prototype.lhs = function() {
 //  Args: Arg ([,] Arg)*
 RubyEngine.Parser.prototype.args = function() {
 	var x, y;
-	if (!(x=this.arg())) return undefined;
+	if ((x=this.arg())==undefined) return undefined;
 	var ret = [x];
 	var prebody = this.body;
 	while ((x=this.comma()) && (y=this.arg())) {
@@ -109,11 +104,11 @@ RubyEngine.Parser.prototype.arg = function() {
 		}
 		this.body=prebody;
 	}
-	x=this.primary();
-	if (x!=null && typeof(x)!="undefined") {
+
+	if ((x=this.primary())!=undefined) {
 		var ret = [x];
 		prebody = this.body;
-		while ((x=this.operator()) && ((y=this.primary())!=null)) {
+		while ((x=this.operator()) && ((y=this.primary())!=undefined)) {
 			prebody = this.body;
 			ret.push(x, y);
 		}
@@ -222,6 +217,8 @@ RubyEngine.Parser.prototype.primary2 = function() {
 	} else if (x=this.reference()) {
 		return x;
 	}
+
+  // if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
 	if (this.body.match(/^[ \t]*(if)/)) {
 		this.body = RegExp.rightContext;
 		x = RegExp.$1;
