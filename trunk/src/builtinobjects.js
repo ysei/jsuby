@@ -83,6 +83,18 @@ RubyEngine.RubyObject.String.methods = {
   },
   "[]": function(self, args, block) {
     return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(args[0]));
+  },
+  "[]=": function(self, args, block) {
+    var x = args[0].num;
+    if (RubyEngine.RubyObject.String.prototype.isPrototypeOf(args[1])) {
+      self.str = self.str.substr(0,x) + args[1].str + self.str.substr(x+1);
+      return args[1];
+    } else if (RubyEngine.RubyObject.Numeric.prototype.isPrototypeOf(args[1])) {
+      self.str = self.str.substr(0,x) + String.fromCharCode(args[1].num) + self.str.substr(x+1);
+      return args[1];
+    } else {
+      // TODO: error
+    }
   }
 };
 

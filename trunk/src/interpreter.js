@@ -120,7 +120,7 @@ RubyEngine.Interpreter.prototype.objectMethod = function(node){
   if (method) {
     return method.apply(this, [obj, node.args, node.block]);
   } else {
-    alert("undefined method :" + obj.toSource() + "." + node[idx].toSource());
+    alert("undefined method :" + obj.toSource() + "." + node.toSource());
   }
 }
 

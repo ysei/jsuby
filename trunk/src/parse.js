@@ -74,9 +74,17 @@ RubyEngine.Parser.prototype.command = function() {
 	return undefined;
 }
 
-
+//  Lhs : VarName | Primary '[' Args ']' | Primary . IDENTIFIER
 RubyEngine.Parser.prototype.lhs = function() {
-	return this.varname();
+  var x;
+  var prebody = this.body;
+  if ((x=this.primary())!=undefined) {
+//console.log(this.body);console.dir(x);console.trace();if(!confirm("continue?")) exit();
+    if (RubyEngine.Node.Method.prototype.isPrototypeOf(x) && x.block==undefined && (x.name=="[]" || x.args==undefined || x.args.length==0)) return x;
+    this.body = prebody;
+  }
+  if ((x=this.varname())!=undefined) return x;
+  return undefined;
 }
 
 //  Args: Arg ([,] Arg)*
@@ -100,7 +108,15 @@ RubyEngine.Parser.prototype.arg = function() {
 	if (x=this.lhs()) {
 		if (this.body.match(/^[ \t]*\=/)) {
 			this.body = RegExp.rightContext;
-			if ((y=this.arg())!=undefined) return new RubyEngine.Node.Method("*let", null, [x, y]);
+			if ((y=this.arg())!=undefined) {
+        if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
+          x.name += "=";
+          if (x.args) { x.args.push(y); } else { x.args = [y]; }
+          return x;
+        } else {
+          return new RubyEngine.Node.Method("*let", null, [x, y]);
+        }
+      }
 		}
 		this.body=prebody;
 	}
