@@ -1,0 +1,46 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testArrayLiteral() {
+	assertArrayEquals("array literal 1", ruby.exec(" [] "), []);
+	assertArrayEquals("array literal 2", ruby.exec(" [1] "), [1]);
+	assertArrayEquals("array literal 3", ruby.exec(" [1, 2, 3] "), [1, 2, 3]);
+	assertArrayEquals("array literal 4", ruby.exec(" [[1, 2], [3, 4]] "), [[1, 2], [3, 4]]);
+	assertArrayEquals("array literal 5", ruby.exec(" [1, '2', 3] "), [1, '2', 3]);
+}
+
+function testBrackett() {
+	ruby.exec(' a=["x", "y", "z"] ')
+	assertEquals("array[nth] 1", ruby.exec(' a[0] '), "x");
+	assertEquals("array[nth] 2", ruby.exec(' a[1] '), "y");
+	//assertEquals("array[nth] 3", ruby.exec(' a[-1] '), "z");  // TODO:
+
+	ruby.exec(' a=[[1, 2], [3, 4]] ')
+	assertEquals("array[nth] 4", ruby.exec(' a[1][0] '), 3);
+}
+
+function testSubstituteBrackett() {
+	ruby.exec(' a=["x", "y", "z"] ')
+	assertArrayEquals("array[nth]= 1", ruby.exec(' a[1] = "ruby"; a '), ["x", "ruby", "z"]);
+	ruby.exec(' a=[[1, 2], [3, 4]] ')
+	assertArrayEquals("array[nth]= 2", ruby.exec(' a[0][1] = 9; a '), [[1, 9], [3, 4]]);
+}
+
+</script>
+</head>
+</html>

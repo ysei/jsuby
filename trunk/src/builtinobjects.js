@@ -4,7 +4,7 @@
 RubyEngine.RubyObject = {}
 RubyEngine.RubyObject.inherit = function(s, c) {
   c.prototype = new s();
-  c.classMethods = {};
+  c.clz = {};
   c.methods = {}
   c.superclz = s;
   return c;
@@ -24,7 +24,7 @@ RubyEngine.RubyObject.Object.prototype.call = function(ruby, name, args, block){
 };
 
 
-RubyEngine.RubyObject.Object.classMethods = {}
+RubyEngine.RubyObject.Object.clz = { "methods":{} }
 RubyEngine.RubyObject.Object.methods = {
  inspect: function(self, args){ return self.toString(); },
  dup: function(self, args){ return self; } // TODO:
@@ -95,6 +95,56 @@ RubyEngine.RubyObject.String.methods = {
     } else {
       // TODO: error
     }
+  }
+};
+
+
+RubyEngine.RubyObject.Array = RubyEngine.RubyObject.inherit(RubyEngine.RubyObject.Object ,function(){
+  this.toValue = function(){
+    var ret = [];
+    for(var i=0;i<this.array.length;i++) ret.push( this.array[i].toValue() );
+    return ret;
+  }
+  this.clz = RubyEngine.RubyObject.Array;
+  this.array = [];
+});
+RubyEngine.RubyObject.Array.toSource = function(){ return "Array"; }
+RubyEngine.RubyObject.Array.prototype.toSource = function(){
+  var ret = "[";
+  for(var i=0;i<this.array.length;i++) {
+    if (i>0) ret+=",";
+    ret += this.array[i].toSource();
+  }
+  return ret + "]";
+}
+RubyEngine.RubyObject.Array.prototype.toString = function(){
+  var ret = "[";
+  for(var i=0;i<this.array.length;i++) {
+    if (i>0) ret+=",";
+    ret += this.array[i].toString();
+  }
+  return ret + "]";
+}
+RubyEngine.RubyObject.Array.clz.methods = {
+  "new": function(self, args, block) {
+    var obj = new RubyEngine.RubyObject.Array();
+    var ary = [];
+    if (args) for(var i=0;i<args.length;i++) ary.push(this.run(args[i]));
+    obj.array = ary;
+    return obj;
+  }
+}
+RubyEngine.RubyObject.Array.methods = {
+  "reverse": function(self, args, block) {
+    var ret = new RubyEngine.RubyObject.Array();
+    ret.array = self.array.reverse;
+    return ret;
+  },
+  "[]": function(self, args, block) {
+    return self.array[args[0].num];
+  },
+  "[]=": function(self, args, block) {
+    return self.array[args[0].num] = args[1];
   }
 };
 

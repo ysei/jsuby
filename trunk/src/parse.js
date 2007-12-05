@@ -60,14 +60,14 @@ RubyEngine.Parser.prototype.command = function() {
 	var x, y, z;
 	var prebody = this.body;
 	if (x=this.operation()) {
-		if (y=this.args()) return new RubyEngine.Node.Method(x, null, y);
+		if (this.body.match(/^[ \t]+/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
 		this.body=prebody;
 	}
 
 	if ((x=this.primary())!=undefined) {
 		if (this.body.match(/^[ \t]*\./)) {
 			this.body = RegExp.rightContext;
-			if ((y=this.operation()) && (z=this.args())) return new RubyEngine.Node.Method(y, x, z);
+			if ((y=this.operation()) && this.body.match(/^[ \t]+/) && (z=this.args())) return new RubyEngine.Node.Method(y, x, z);
 		}
 		this.body=prebody;
 	}
@@ -211,7 +211,7 @@ RubyEngine.Parser.prototype.primary = function() {
   return prim;
 }
 
-//  Primary2: '(' Expr ')' | Literal | Reference 
+//  Primary2: '(' Expr ')' | Literal | Reference | '[' Args ']'
 //         if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
 //  Literal: / $INT:push | $JS_STRING:push /,
 RubyEngine.Parser.prototype.primary2 = function() {
@@ -246,6 +246,17 @@ RubyEngine.Parser.prototype.primary2 = function() {
 	} else if (x=this.reference()) {
 		return x;
 	}
+
+  // '[' Args ']'
+	if (this.body.match(/^[ \t]*\[/)) {
+		this.body = RegExp.rightContext;
+    x = this.args();
+    if (this.body.match(/^[ \t]*\]/)) {
+  		this.body = RegExp.rightContext;
+      return new RubyEngine.Node.Method("new", RubyEngine.RubyObject.Array, x);
+    }
+    this.body = prebody;
+  }
 
   // if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
 	if (this.body.match(/^[ \t]*(if)/)) {
