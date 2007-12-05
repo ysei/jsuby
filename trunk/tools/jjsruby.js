@@ -1,5 +1,5 @@
-// jsruby command line READ-EVAL-PRINT-LOOP.
-// (this command uses spidermonkey :)
+// jjsruby command line READ-EVAL-PRINT-LOOP.
+// (this command uses Rhino :)
 
 importPackage(java.io);
 var stdin = new BufferedReader(new InputStreamReader(java.lang.System["in"]));
