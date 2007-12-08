@@ -11,15 +11,18 @@ navigator = {
 }
 
 // load jsruby libraries.
-load("src/head.js");
-load("src/node.js");
-load("src/builtinobjects.js");
-load("src/parse.js");
-load("src/interpreter.js");
-load("src/builtinmethods.js");
-load("src/util.js");
+function load_jsruby() {
+    load("src/head.js");
+    load("src/node.js");
+    load("src/builtinobjects.js");
+    load("src/parse.js");
+    load("src/interpreter.js");
+    load("src/builtinmethods.js");
+    load("src/util.js");
+}
 
 // setup
+load_jsruby();
 var parser = new RubyEngine.Parser();
 var ruby = new RubyEngine.Interpreter();
 ruby.writeStdout = function(st) { print(st.replace(/\n$/, "")); }
@@ -30,9 +33,14 @@ function alert(st) {
 // do loop
 stdout.write("> ");stdout.flush();
 while (line = stdin.readLine()) {
-  var nodetree = parser.parse(line)
-  //print(nodetree.toSource());
-  print(ruby.exec(nodetree));
+  if (line == '!reload') {
+    load_jsruby();
+    print("reload ok");
+  } else {
+    var nodetree = parser.parse(line)
+    print(nodetree.toSource());
+    print(ruby.exec(nodetree));
+  }
   stdout.write("> ");stdout.flush();
 }
 
