@@ -33,13 +33,17 @@ function alert(st) {
 // do loop
 stdout.write("> ");stdout.flush();
 while (line = stdin.readLine()) {
-  if (line == '!reload') {
-    load_jsruby();
-    print("reload ok");
-  } else {
-    var nodetree = parser.parse(line)
-    print(nodetree.toSource());
-    print(ruby.exec(nodetree));
+  try {
+    if (line == '!reload') {
+      load_jsruby();
+      print("reload ok");
+    } else {
+      var nodetree = parser.parse(line)
+      print(nodetree.toSource());
+      print(ruby.exec(nodetree));
+    }
+  } catch (e) {
+    print(e);
   }
   stdout.write("> ");stdout.flush();
 }
