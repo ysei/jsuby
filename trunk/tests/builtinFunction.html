@@ -16,24 +16,24 @@
 
 var ruby = new RubyEngine.Interpreter();
 
+function _test_stdout(expression, expected) {
+	ruby.stdout = "";
+	ruby.exec(expression);
+	assertEquals(expression, ruby.stdout, expected);
+}
+
 function testPuts() {
+    _test_stdout("puts", "\n");
+    _test_stdout("puts 999", "999\n");
+    _test_stdout('puts "abc"', "abc\n");
+    _test_stdout('puts "abc", 999', "abc\n999\n");
+}
 
-	ruby.stdout = "";
-	ruby.exec("puts");
-	assertEquals("puts 1", ruby.stdout, "\n");
-
-	ruby.stdout = "";
-	ruby.exec("puts 999");
-	assertEquals("puts 2", ruby.stdout, "999\n");
-
-	ruby.stdout = "";
-	ruby.exec('puts "abc"');
-	assertEquals("puts 3", ruby.stdout, "abc\n");
-
-	ruby.stdout = "";
-	ruby.exec('puts "abc", 999');
-	assertEquals("puts 4", ruby.stdout, "abc\n999\n");
-
+function testP() {
+    _test_stdout('p', '');
+    _test_stdout('p 3', "3\n");
+    _test_stdout('p "123"', "\"123\"\n");
+    _test_stdout('p 123,456', "123\n456\n");
 }
 
 

@@ -21,6 +21,13 @@ RubyEngine.Interpreter.KernelMethod = {
   "*let": function(args) {
 //console.dir(args);console.dir(this.scope);console.dir(this.run(args[1]));if(!confirm("continue?")) exit();
     return this.scope[0][args[0].name] = this.run(args[1]);
+  },
+  "p": function(args) {
+    if (args && args.length > 0) {
+      for (var i=0; i<args.length; i++) {
+        this.writeStdout(args[i].toSource() + "\n");
+      }
+    }
   }
 };
 
