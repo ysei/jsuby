@@ -26,6 +26,11 @@ function testRange() {
 function testEach() {
 	assertArrayEquals("each 1", ruby.exec("(1..10).each{}"), [1,2,3,4,5,6,7,8,9,10]);
 	assertEquals("each 2", ruby.exec("s=0;(1..10).each{|x|s=s+x};s"), 55);
+
+	ruby.scope.clear();
+	assertEquals("each 3 (scope)", ruby.exec("x=0;(1..10).each{|x|};x"), 10);
+	ruby.scope.clear();
+	assertEquals("each 4 (scope)", ruby.exec("    (1..10).each{|x|};x").message, "undefined local variable or method `x'");
 }
 
 </script>

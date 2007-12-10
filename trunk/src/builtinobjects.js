@@ -55,10 +55,12 @@ RubyEngine.RubyObject.Numeric.methods = {
     if (!block) return null;
     var varname;
     if (block.vars) varname = block.vars[0].name;
+    this.scope.pushLevel();
     for(var i=self.num; i<=args[0].num; i++) {
-    	if (varname) this.scope[0][varname] = new RubyEngine.RubyObject.Numeric(i);
+    	if (varname) this.scope.substitute(varname, new RubyEngine.RubyObject.Numeric(i));
     	this.run(block.block);
     }
+    this.scope.popLevel();
     return self;
   }
 };
@@ -165,10 +167,28 @@ RubyEngine.RubyObject.Range.methods = {
   if (!block) return null;
   var varname;
   if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
+  this.scope.pushLevel();
   for(var i=self.from;i<=self.to;i++) {
-  	if (varname) this.scope[0][varname] = new RubyEngine.RubyObject.Numeric(i);
+  	if (varname) this.scope.substitute(varname, new RubyEngine.RubyObject.Numeric(i));
   	this.run(block.block);
   }
+  this.scope.popLevel();
   return self;
  }
 }
+
+
+
+//// Exception ///////////////////////////////////////////////////////
+
+RubyEngine.RubyObject.Exception = RubyEngine.RubyObject.inherit(RubyEngine.RubyObject.Object,function(){});
+RubyEngine.RubyObject.Exception.prototype.toString = function(){ return this.message; }
+RubyEngine.RubyObject.Exception.prototype.toSource = function(){ return this.message; }
+
+RubyEngine.RubyObject.StandardError = RubyEngine.RubyObject.inherit(RubyEngine.RubyObject.Exception,function(){});
+RubyEngine.RubyObject.NameError = RubyEngine.RubyObject.inherit(RubyEngine.RubyObject.StandardError,function(){
+  this.toValue = function(){ return this; }
+  if (arguments.length>0) this.message = arguments[0];
+  if (arguments.length>1) this.name = arguments[1];
+});
+

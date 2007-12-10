@@ -1,7 +1,40 @@
 //// Interpreter /////////////////////////////////////////////////////
 
+RubyEngine.Scope = function(){ this.clear(); }
+RubyEngine.Scope.copy = function(scope, src) {
+  for(var i in src) scope[i] = src[i];
+  return scope;
+}
+
+RubyEngine.Scope.prototype.clear = function(){
+  this.level = [{}]
+  this.stack = []
+  this.global = RubyEngine.Scope.copy({}, RubyEngine.Interpreter.KernelMethod)
+}
+RubyEngine.Scope.prototype.substitute = function(name, value){
+  for(var i=this.level.length-1;i>=0;i--) {
+    if (name in this.level[i]) return this.level[i][name] = value;
+  }
+  if (name in this.global) return this.global[name] = value;
+  return this.level[this.level.length-1][name] = value;
+}
+RubyEngine.Scope.prototype.reference = function(name){
+  for(var i=this.level.length-1;i>=0;i--) {
+    if (name in this.level[i]) return this.level[i][name];
+  }
+  if (name in this.global) return this.global[name];
+  return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"'", name);
+}
+RubyEngine.Scope.prototype.pushScope = function(){ this.stack.push(this.level); this.level=[{}]; }
+RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop(); }
+RubyEngine.Scope.prototype.pushLevel = function(){ this.level.push({}); }
+RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
+
+
+
 RubyEngine.Interpreter = function(){
-	this.scope = [{}];
+  this.context = {};
+	this.scope = new RubyEngine.Scope();
 	this.stdout = "";
 	this.parser = new RubyEngine.Parser();
 }
@@ -25,14 +58,12 @@ RubyEngine.Interpreter.prototype.run = function(node){
 		}
 
 	} else if (RubyEngine.Node.Variable.prototype.isPrototypeOf(node)) {
-		ret = this.scope[0][node.name];
+		ret = this.scope.reference(node.name);
 
 	} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(node)) {
-    if (this.scope[0].hasOwnProperty(node.name)) {
-		  ret = this.scope[0][node.name];
-		} else {
-      ret = this.kernelMethod(node);
-		}
+    ret = this.scope.reference(node.name);
+    if (typeof(ret) == "function") return ret.apply(this, [node.args]);
+    return ret;
 
 	} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(node)) {
 		ret = this.calcExpr(node);
@@ -59,9 +90,9 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 		} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(x)) {
 			stk.push( this.calcExpr(x) );
 		} else if (RubyEngine.Node.Variable.prototype.isPrototypeOf(x)) {
-			stk.push( this.scope[0][x.name] );
+			stk.push( this.scope.reference(x.name) );
 		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
-			stk.push( this.scope[0][x.name] );
+			stk.push( this.scope.reference(x.name) );
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {
 			case "+":
