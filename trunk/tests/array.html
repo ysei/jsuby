@@ -24,6 +24,14 @@ function testArrayLiteral() {
 	assertArrayEquals("array literal 5", ruby.exec(" [1, '2', 3] "), [1, '2', 3]);
 }
 
+function testArrayNew() {
+	assertArrayEquals("array new 1", ruby.exec(" Array.new() "), []);
+	assertArrayEquals("array new 2", ruby.exec(" Array.new(1) "), [1]);
+	assertArrayEquals("array new 3", ruby.exec(" Array.new(1, 2, 3) "), [1, 2, 3]);
+	assertArrayEquals("array new 4", ruby.exec(" Array.new([1, 2], Array.new(3, 4)) "), [[1, 2], [3, 4]]);
+	assertArrayEquals("array new 5", ruby.exec(" Array.new(1, '2', 3) "), [1, '2', 3]);
+}
+
 function testBrackett() {
 	ruby.exec(' a=["x", "y", "z"] ')
 	assertEquals("array[nth] 1", ruby.exec(' a[0] '), "x");

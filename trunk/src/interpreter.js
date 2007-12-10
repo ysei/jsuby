@@ -1,15 +1,17 @@
 //// Interpreter /////////////////////////////////////////////////////
 
 RubyEngine.Scope = function(){ this.clear(); }
-RubyEngine.Scope.copy = function(scope, src) {
-  for(var i in src) scope[i] = src[i];
-  return scope;
-}
 
 RubyEngine.Scope.prototype.clear = function(){
   this.level = [{}]
   this.stack = []
-  this.global = RubyEngine.Scope.copy({}, RubyEngine.Interpreter.KernelMethod)
+  this.global = {}
+  for(var i in RubyEngine.Interpreter.KernelMethod) {
+    if (i.match(/^[a-z_]/)) this.global[i] = RubyEngine.Interpreter.KernelMethod[i];
+  }
+  for(var i in RubyEngine.RubyObject) {
+    if (i.match(/^[A-Z\$]/)) this.global[i] = RubyEngine.RubyObject[i];
+  }
 }
 RubyEngine.Scope.prototype.substitute = function(name, value){
   for(var i=this.level.length-1;i>=0;i--) {
@@ -50,7 +52,7 @@ RubyEngine.Interpreter.prototype.exec = function(node){
 }
 
 RubyEngine.Interpreter.prototype.run = function(node){
-//console.log(args[idx].toSource());console.trace();if(!confirm("continue?")) exit();
+//console.log(node.toSource());console.trace();if(!confirm("continue?")) exit();
 	var ret = null;
 	if (Array.prototype.isPrototypeOf(node)) {
   	for (var idx=0;idx<node.length;idx++) {
@@ -145,8 +147,13 @@ RubyEngine.Interpreter.prototype.kernelMethod = function(node){
 	}
 }
 RubyEngine.Interpreter.prototype.objectMethod = function(node){
-//console.log(node.toSource());console.trace();if(!confirm("continue?")) exit();
-  var obj = this.run(node.target);
+//console.log(node.toSource());console.dir(node);console.trace();if(!confirm("continue?")) exit();
+  var obj;
+  if (RubyEngine.Node.Ref.prototype.isPrototypeOf(node.target)) {
+    obj = this.scope.reference(node.target.name);
+  } else {
+    obj = this.run(node.target);
+  }
   var method = obj.clz.methods[node.name];
   if (method) {
     return method.apply(this, [obj, node.args, node.block]);
