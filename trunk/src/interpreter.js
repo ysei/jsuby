@@ -5,7 +5,7 @@ RubyEngine.Scope = function(){ this.clear(); }
 RubyEngine.Scope.prototype.clear = function(){
   this.level = [{}]
   this.stack = []
-  this.global = {}
+  this.global = { "$window": new RubyEngine.RubyObject.JSObject(window), "$document": new RubyEngine.RubyObject.JSObject(document) }
   for(var i in RubyEngine.Interpreter.KernelMethod) {
     if (i.match(/^[a-z_]/)) this.global[i] = RubyEngine.Interpreter.KernelMethod[i];
   }

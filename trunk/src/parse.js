@@ -79,7 +79,6 @@ RubyEngine.Parser.prototype.lhs = function() {
   var x;
   var prebody = this.body;
   if ((x=this.primary())!=undefined) {
-//console.log(this.body);console.dir(x);console.trace();if(!confirm("continue?")) exit();
     if (RubyEngine.Node.Method.prototype.isPrototypeOf(x) && x.block==undefined && (x.name=="[]" || x.args==undefined || x.args.length==0)) return x;
     this.body = prebody;
   }
@@ -225,6 +224,7 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		}
 		this.body = prebody;
 	}
+
 	if (this.body.match(/^[ \t]*(-?0x[0-9A-F]+|(-?)0b([01]+)|-?0o?[0-7]+|-?(?:0d)?[0-9]+)/i)) {
 		this.body = RegExp.rightContext;
     var i;
@@ -338,7 +338,7 @@ RubyEngine.Parser.prototype.operator = function() {
 }
 
 RubyEngine.Parser.prototype.reference = function() {
-	if (this.body.match(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*[\!\?]?)/) && !RubyEngine.RESERVED[RegExp.$1]) {
+	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*[\!\?]?)/) && !RubyEngine.RESERVED[RegExp.$1]) {
 		this.body = RegExp.rightContext;
 		return new RubyEngine.Node.Ref(RegExp.$1);
 	}

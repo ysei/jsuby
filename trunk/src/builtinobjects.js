@@ -16,8 +16,9 @@ RubyEngine.RubyObject.call = function(self, name, args, block){
   if (method) {
     return method.apply(this, [self, args, block]);
   } else if (name!="method_missing") {
-    var newarg = [new RubyEngine.RubyObject.String(node.name)].concat(node.args);
-    var ret = RubyEngine.RubyObject.call.apply(this, [self, "method_missing", newarg, node.block]);
+    var newarg = [new RubyEngine.RubyObject.String(name)];
+    if (args && args.length > 0) newarg = newarg.concat(args);
+    var ret = RubyEngine.RubyObject.call.apply(this, [self, "method_missing", newarg, block]);
     if (ret!=undefined) return ret;
     return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.clz.toString(), name);
   }
@@ -179,6 +180,25 @@ RubyEngine.RubyObject.Range.methods = {
   }
   this.scope.popLevel();
   return self;
+ }
+}
+
+
+RubyEngine.RubyObject.JSObject = RubyEngine.RubyObject.inherit(RubyEngine.RubyObject.Object ,function(obj){
+  this.obj = obj;
+  this.clz = RubyEngine.RubyObject.JSObject;
+});
+RubyEngine.RubyObject.JSObject.prototype.toString = function(){ return this.obj.toString(); }
+RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; }
+RubyEngine.RubyObject.JSObject.methods = {
+ "method_missing": function(self, args, block) {
+    if (args.length==1) {
+      return new RubyEngine.RubyObject.JSObject(self.obj[args[0].str]);
+    } else {
+      var jsargs = [];
+      for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
+      return new RubyEngine.RubyObject.JSObject(self.obj[args[0].str].apply(self.obj, jsargs));
+    }
  }
 }
 
