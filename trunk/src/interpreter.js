@@ -14,11 +14,17 @@ RubyEngine.Scope.prototype.clear = function(){
   }
 }
 RubyEngine.Scope.prototype.substitute = function(name, value){
-  for(var i=this.level.length-1;i>=0;i--) {
-    if (name in this.level[i]) return this.level[i][name] = value;
+  if (name.match(/^\$/)) {
+      return this.global[name] = value;
+  } else if (name.match(/^[A-Z]/)) {
+    if (name in this.global) { /* "warning: already initialized constant "+name */ }
+    return this.global[name] = value;
+  } else {
+    for(var i=this.level.length-1;i>=0;i--) {
+      if (name in this.level[i]) return this.level[i][name] = value;
+    }
+    return this.level[this.level.length-1][name] = value;
   }
-  if (name in this.global) return this.global[name] = value;
-  return this.level[this.level.length-1][name] = value;
 }
 RubyEngine.Scope.prototype.reference = function(name){
   for(var i=this.level.length-1;i>=0;i--) {
