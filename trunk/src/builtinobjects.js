@@ -9,19 +9,24 @@ RubyEngine.RubyObject.inherit = function(s, c) {
   c.superclz = s;
   return c;
 }
+RubyEngine.RubyObject.call = function(self, name, args, block){
+  var clz = self.clz;
+  var method;
+  while( !(method=clz.methods[name]) ) if ( !(clz=clz.superclz) ) break;
+  if (method) {
+    return method.apply(this, [self, args, block]);
+  } else if (name!="method_missing") {
+    var newarg = [new RubyEngine.RubyObject.String(node.name)].concat(node.args);
+    var ret = RubyEngine.RubyObject.call.apply(this, [self, "method_missing", newarg, node.block]);
+    if (ret!=undefined) return ret;
+    return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.clz.toString(), name);
+  }
+  return undefined;
+};
 
 
 RubyEngine.RubyObject.Object = function(){ this.clz = RubyEngine.RubyObject.Object; }
 RubyEngine.RubyObject.Object.prototype.toValue = function(){ return this; } // to Javascript value(instance)
-RubyEngine.RubyObject.Object.prototype.call = function(ruby, name, args, block){
-  var clz = this.clz;
-  var method;
-  while( !(method=clz.methods[name]) ) if ( !(clz=clz.superclz) ) break;
-  if (method) {
-    return method.apply(ruby, [this, args, block]);
-  } else {
-  }
-};
 
 
 RubyEngine.RubyObject.Object.clz = { "methods":{} }

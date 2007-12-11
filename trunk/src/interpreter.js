@@ -154,12 +154,7 @@ RubyEngine.Interpreter.prototype.objectMethod = function(node){
   } else {
     obj = this.run(node.target);
   }
-  var method = obj.clz.methods[node.name];
-  if (method) {
-    return method.apply(this, [obj, node.args, node.block]);
-  } else {
-    alert("undefined method :" + obj.toSource() + "." + node.toSource());
-  }
+  return RubyEngine.RubyObject.call.apply(this, [obj, node.name, node.args, node.block]);
 }
 
 
