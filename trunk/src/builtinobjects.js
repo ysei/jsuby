@@ -24,6 +24,25 @@ RubyEngine.RubyObject.call = function(self, name, args, block){
   }
   return undefined;
 };
+RubyEngine.RubyObject.js2r = function(obj){
+  if (obj==undefined) return obj;
+  if (obj==null) return obj; // TODO:
+  var clzname = Object.prototype.toString.call(obj);
+  if (clzname == "[object String]") {
+    return new RubyEngine.RubyObject.String(obj); // string
+  } else if (typeof(obj)=="object" && ("length" in obj)) {
+    // like array (including collection)
+    var ary = []
+    for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
+    return ary
+  } else if (clzname == "[object Number]") {
+    return new RubyEngine.RubyObject.Numeric(obj); // number
+  } else if (clzname == "[object Boolean]") {
+    return obj; // TODO: boolean
+  } else {
+    return new RubyEngine.RubyObject.JSObject(obj); // others
+  }
+}
 
 
 RubyEngine.RubyObject.Object = function(){ this.clz = RubyEngine.RubyObject.Object; }
@@ -193,11 +212,11 @@ RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; 
 RubyEngine.RubyObject.JSObject.methods = {
  "method_missing": function(self, args, block) {
     if (args.length==1) {
-      return new RubyEngine.RubyObject.JSObject(self.obj[args[0].str]);
+      return RubyEngine.RubyObject.js2r(self.obj[args[0].str]);
     } else {
       var jsargs = [];
       for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
-      return new RubyEngine.RubyObject.JSObject(self.obj[args[0].str].apply(self.obj, jsargs));
+      return RubyEngine.RubyObject.js2r(self.obj[args[0].str].apply(self.obj, jsargs));
     }
  }
 }

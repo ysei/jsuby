@@ -146,7 +146,7 @@ RubyEngine.Parser.prototype.primary = function() {
 //console.log(this.body);console.trace();if(!confirm("continue?")) exit();
 	var prim = this.primary2();
   while(prim != undefined) {
-    var y, z;
+    var y, z=null;
     var prebody = this.body;
 
 		if (!this.body.match(/^[ \t]*(\.|\[)/)) break;
@@ -202,7 +202,7 @@ RubyEngine.Parser.prototype.primary = function() {
 
   // Args ( but only Method without arguments and block )
   var y;
-  if (RubyEngine.Node.Method.prototype.isPrototypeOf(prim) && prim.args==null && prim.block==undefined && (y=this.args())!=undefined) prim.args = y;
+  if (RubyEngine.Node.Method.prototype.isPrototypeOf(prim) && prim.args==null && prim.block==undefined && (y=this.args())!=undefined) {console.log(y.toSource());prim.args = y;}
 
   return prim;
 }
