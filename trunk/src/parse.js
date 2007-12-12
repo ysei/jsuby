@@ -55,20 +55,12 @@ RubyEngine.Parser.prototype.expr2 = function() {
 	return undefined;
 }
 
-//  Command: Operation Args | Primary '.' Operation Args
+//  Command: Operation Args
 RubyEngine.Parser.prototype.command = function() {
 	var x, y, z;
 	var prebody = this.body;
 	if (x=this.operation()) {
 		if (this.body.match(/^[ \t]+/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
-		this.body=prebody;
-	}
-
-	if ((x=this.primary())!=undefined) {
-		if (this.body.match(/^[ \t]*\./)) {
-			this.body = RegExp.rightContext;
-			if ((y=this.operation()) && this.body.match(/^[ \t]+/) && (z=this.args())) return new RubyEngine.Node.Method(y, x, z);
-		}
 		this.body=prebody;
 	}
 	return undefined;
@@ -148,7 +140,7 @@ RubyEngine.Parser.prototype.blockvars = function() {
 	return null
 }
 
-// Primary : Primary2 ( '[' Args ']' | '.'Operation ('(' Args ')')? ('{' ('|'Varname'|')? CompStmt '}')? )* 
+// Primary : Primary2 ( '[' Args ']' | '.'Operation ('(' Args ')')? ('{' ('|'Varname'|')? CompStmt '}')? )* Args?
 // # for removing left recursions of Primary in BNF of Ruby
 RubyEngine.Parser.prototype.primary = function() {
 //console.log(this.body);console.trace();if(!confirm("continue?")) exit();
@@ -157,7 +149,7 @@ RubyEngine.Parser.prototype.primary = function() {
     var y, z;
     var prebody = this.body;
 
-		if (!this.body.match(/^[ \t]*(\.|\[)/)) return prim;
+		if (!this.body.match(/^[ \t]*(\.|\[)/)) break;
 		this.body = RegExp.rightContext;
 
     // '[' Args ']'
@@ -165,7 +157,7 @@ RubyEngine.Parser.prototype.primary = function() {
       y = this.args();
       if (y==undefined || !this.body.match(/^[ \t]*\]/)) {
         this.body = prebody;
-        return prim;
+        break;
       }
   		this.body = RegExp.rightContext;
   		prim = new RubyEngine.Node.Method('[]', prim, y);
@@ -175,7 +167,7 @@ RubyEngine.Parser.prototype.primary = function() {
     // '.'Operation
 		if ((y=this.operation()) == undefined) {
 		  this.body = prebody;
-		  return prim;
+		  break;
 		}
 
     // ('(' Args ')')?
@@ -207,6 +199,11 @@ RubyEngine.Parser.prototype.primary = function() {
     	}
     }
 	}
+
+  // Args ( but only Method without arguments and block )
+  var y;
+  if (RubyEngine.Node.Method.prototype.isPrototypeOf(prim) && prim.args==null && prim.block==undefined && (y=this.args())!=undefined) prim.args = y;
+
   return prim;
 }
 
