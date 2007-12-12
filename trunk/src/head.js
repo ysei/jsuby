@@ -32,6 +32,10 @@ if(navigator.userAgent.indexOf("Firefox")<0){
 //// Reserved Words & Operators //////////////////////////////////////
 
 var RubyEngine = {}
+RubyEngine.FIREFOX = navigator.userAgent.indexOf("Firefox")>0;
+RubyEngine.OPERA = navigator.userAgent.indexOf("Opera")>0;
+RubyEngine.IE = navigator.userAgent.indexOf("MSIE")>0;
+RubyEngine.SAFARI = navigator.userAgent.indexOf("Safari")>0;
 
 RubyEngine.RESERVED = {
   "if":true, "then":true, "elsif":true, "else":true, "end":true,

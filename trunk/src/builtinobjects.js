@@ -10,6 +10,7 @@ RubyEngine.RubyObject.inherit = function(s, c) {
   return c;
 }
 RubyEngine.RubyObject.call = function(self, name, args, block){
+//console.log(self.toSource());console.trace();if(!confirm("continue?")) exit();
   var clz = self.clz;
   var method;
   while( !(method=clz.methods[name]) ) if ( !(clz=clz.superclz) ) break;
@@ -24,23 +25,26 @@ RubyEngine.RubyObject.call = function(self, name, args, block){
   }
   return undefined;
 };
+RubyEngine.RubyObject.LikeArray = {"[object Array]":true, "[object HTMLCollection]":true};
 RubyEngine.RubyObject.js2r = function(obj){
   if (obj==undefined) return obj;
   if (obj==null) return obj; // TODO:
   var clzname = Object.prototype.toString.call(obj);
-  if (clzname == "[object String]") {
-    return new RubyEngine.RubyObject.String(obj); // string
-  } else if (typeof(obj)=="object" && ("length" in obj)) {
-    // like array (including collection)
+  if (clzname == "[object String]") {                 // string
+    return new RubyEngine.RubyObject.String(obj);
+  } else if (clzname in RubyEngine.RubyObject.LikeArray){ // like array (including collection)
     var ary = []
     for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
-    return ary
-  } else if (clzname == "[object Number]") {
-    return new RubyEngine.RubyObject.Numeric(obj); // number
-  } else if (clzname == "[object Boolean]") {
-    return obj; // TODO: boolean
-  } else {
-    return new RubyEngine.RubyObject.JSObject(obj); // others
+    var ret = new RubyEngine.RubyObject.Array();
+    ret.array = ary;
+    return ret;
+    return new RubyEngine.RubyObject.Array(ary);
+  } else if (clzname == "[object Number]") {          // number
+    return new RubyEngine.RubyObject.Numeric(obj);
+  } else if (clzname == "[object Boolean]") {         // TODO: boolean
+    return obj;
+  } else {                                            // others
+    return new RubyEngine.RubyObject.JSObject(obj);
   }
 }
 
@@ -162,17 +166,32 @@ RubyEngine.RubyObject.Array.clz.methods = {
   }
 }
 RubyEngine.RubyObject.Array.methods = {
-  "reverse": function(self, args, block) {
-    var ret = new RubyEngine.RubyObject.Array();
-    ret.array = self.array.reverse;
-    return ret;
-  },
   "[]": function(self, args, block) {
     return self.array[args[0].num];
   },
   "[]=": function(self, args, block) {
     return self.array[args[0].num] = args[1];
+  },
+  "length": function(self, args, block) {
+    return new RubyEngine.RubyObject.Numeric(self.array.length);
+  },
+  "reverse": function(self, args, block) {
+    var ret = new RubyEngine.RubyObject.Array();
+    ret.array = self.array.reverse;
+    return ret;
+  },
+ "each": function(self, args, block) {
+  if (!block) return null;
+  var varname;
+  if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
+  this.scope.pushLevel();
+  for(var i=0;i<self.array.length;i++) {
+  	if (varname) this.scope.substitute(varname, self.array[i]);
+  	this.run(block.block);
   }
+  this.scope.popLevel();
+  return self;
+ }
 };
 
 
@@ -188,7 +207,7 @@ RubyEngine.RubyObject.Range.prototype.toValue = function(){
   return value;
 }
 RubyEngine.RubyObject.Range.methods = {
- each: function(self, args, block) {
+ "each": function(self, args, block) {
   if (!block) return null;
   var varname;
   if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
@@ -211,12 +230,25 @@ RubyEngine.RubyObject.JSObject.prototype.toString = function(){ return this.obj.
 RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; }
 RubyEngine.RubyObject.JSObject.methods = {
  "method_missing": function(self, args, block) {
+    var name = args[0].str;
     if (args.length==1) {
-      return RubyEngine.RubyObject.js2r(self.obj[args[0].str]);
+      return RubyEngine.RubyObject.js2r(self.obj[name]);
+    } else if (name[name.length-1] == "=") {
+      self.obj[name.slice(0, name.length-1)] = args[1].toValue();
     } else {
-      var jsargs = [];
-      for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
-      return RubyEngine.RubyObject.js2r(self.obj[args[0].str].apply(self.obj, jsargs));
+      if (name in self.obj) {
+        if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera
+          var jsargs = [];
+          for (var i=1;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
+          return RubyEngine.RubyObject.js2r(self.obj[name].apply(self.obj, jsargs));
+        } else { // others
+          var jsargs = [];
+          for (var i=1;i<args.length;i++) jsargs.push( "this.run(args["+i+"]).toValue()" );
+          return RubyEngine.RubyObject.js2r( eval( "self.obj[name]("+jsargs.join(',')+")" ));
+        }
+      } else {
+        return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.obj.toString(), name);
+      }
     }
  }
 }

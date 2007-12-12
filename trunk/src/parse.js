@@ -202,7 +202,7 @@ RubyEngine.Parser.prototype.primary = function() {
 
   // Args ( but only Method without arguments and block )
   var y;
-  if (RubyEngine.Node.Method.prototype.isPrototypeOf(prim) && prim.args==null && prim.block==undefined && (y=this.args())!=undefined) {console.log(y.toSource());prim.args = y;}
+  if (RubyEngine.Node.Method.prototype.isPrototypeOf(prim) && prim.args==null && prim.block==undefined && (y=this.args())!=undefined) prim.args = y;
 
   return prim;
 }

@@ -18,11 +18,14 @@ var ruby = new RubyEngine.Interpreter();
 
 function testDocument() {
 	assertEquals("document 1", ruby.exec("$document.getElementById('test').innerHTML"), "jsruby test");
+	assertEquals("document 2", ruby.exec("$document.getElementsByTagName('div').length"), 3);
 }
 
 </script>
 </head>
 <body>
 <div id="test">jsruby test</div>
+<div id="test2">jsruby TEST2</div>
+<div id="test3">jsruby test3</div>
 </body>
 </html>
