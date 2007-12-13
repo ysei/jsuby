@@ -105,12 +105,25 @@ RubyEngine.RubyObject.String = RubyEngine.RubyObject.inherit(RubyEngine.RubyObje
 RubyEngine.RubyObject.String.prototype.toString = function(){ return this.str; }
 RubyEngine.RubyObject.String.prototype.toSource = function(){ return '"'+this.str+'"'; }
 RubyEngine.RubyObject.String.prototype.add = function(x){ return new RubyEngine.RubyObject.String(this.str + x.str); }
+RubyEngine.RubyObject.String.prototype.mul = function(x){
+  var st="";
+  for(var i=0;i<x.num;i++) st+=this.str;
+  return new RubyEngine.RubyObject.String(st);
+}
 RubyEngine.RubyObject.String.prototype.eql = function(x){ return this.str == x.str; }
 RubyEngine.RubyObject.String.methods = {
+  "length": function(self, args, block) {
+    return new RubyEngine.RubyObject.Numeric(self.str.length);
+  },
   "reverse": function(self, args, block) {
     var st = "";
     for(var i=self.str.length-1;i>=0;i--) st += self.str.charAt(i);
     return new RubyEngine.RubyObject.String(st);
+  },
+  "to_i": function(self, args, block) {
+    var v = parseInt(self.str);
+    if (isNaN(v)) v=0;
+    return new RubyEngine.RubyObject.Numeric(v);
   },
   "[]": function(self, args, block) {
     return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(args[0]));

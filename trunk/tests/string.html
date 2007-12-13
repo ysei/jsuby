@@ -29,11 +29,30 @@ function testAdd() {
 	assertEquals("string add 3", ruby.exec(" x='u'+'b'; \"r\"+x+\"y\" "), "ruby");
 }
 
+function testMul() {
+	assertEquals("string multiple 1", ruby.exec(" 'abc' * 0 "), "");
+	assertEquals("string multiple 2", ruby.exec(" 'abc' * 1 "), "abc");
+	assertEquals("string multiple 3", ruby.exec(" 'abc' * 3 "), "abcabcabc");
+}
+
+function testLength() {
+	assertEquals("length 1", ruby.exec(' "".length '), 0);
+	assertEquals("length 2", ruby.exec(' "abc".length '), 3);
+}
+
 function testReverse() {
 	assertEquals("reverse 1", ruby.exec(' "a".reverse '), "a");
 	assertEquals("reverse 2", ruby.exec(' "abc".reverse '), "cba");
 	assertEquals("reverse 3", ruby.exec(' "".reverse '), "");
 	assertEquals("reverse 4", ruby.exec(" x='ruby'; x.reverse "), "ybur");
+}
+
+function testTo_i() {
+	assertEquals("to_i 1", ruby.exec(' "".to_i '), 0);
+	assertEquals("to_i 2", ruby.exec(' "abc".to_i '), 0);
+	assertEquals("to_i 3", ruby.exec(' "0".to_i '), 0);
+	assertEquals("to_i 4", ruby.exec(' "123".to_i '), 123);
+	assertEquals("to_i 5", ruby.exec(' "-123".to_i '), -123);
 }
 
 function testBrackett() {
