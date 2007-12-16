@@ -69,6 +69,7 @@ RubyEngine.RubyObject.Numeric = RubyEngine.RubyObject.inherit(RubyEngine.RubyObj
 //RubyEngine.RubyObject.Numeric.prototype.toValue = function(){ return this.num; }
 RubyEngine.RubyObject.Numeric.prototype.toString = function(){ return this.num.toString(); }
 RubyEngine.RubyObject.Numeric.prototype.toSource = function(){ return this.num.toString(); }
+RubyEngine.RubyObject.Numeric.prototype.neg = function(){ return new RubyEngine.RubyObject.Numeric(-this.num); }
 RubyEngine.RubyObject.Numeric.prototype.add = function(x){ return new RubyEngine.RubyObject.Numeric(this.num + x.num); }
 RubyEngine.RubyObject.Numeric.prototype.sub = function(x){ return new RubyEngine.RubyObject.Numeric(this.num - x.num); }
 RubyEngine.RubyObject.Numeric.prototype.mul = function(x){ return new RubyEngine.RubyObject.Numeric(this.num * x.num); }

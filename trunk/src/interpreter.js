@@ -103,6 +103,9 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 			stk.push( this.scope.reference(x.name) );
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {
+			case "neg":
+				stk.push(stk.pop().neg());
+				break;
 			case "+":
 				var a = stk.pop();
 				stk.push(stk.pop().add(a));

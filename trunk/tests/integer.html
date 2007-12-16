@@ -39,6 +39,12 @@ function testLiteral() {
 	assertEquals("char", ruby.exec("?a"), 97);
 }
 
+function testMonominalCalc() {
+	assertEquals("calc 1", ruby.exec("-4"), -4);
+	assertEquals("calc 2", ruby.exec("--4"), 4);
+	assertEquals("calc 3", ruby.exec("---4"), -4);
+	assertEquals("calc 4", ruby.exec("-+-+-4"), -4);
+}
 function testBinominalCalc() {
 	assertEquals("calc 1", ruby.exec("3+4"),  7);
 	assertEquals("calc 2", ruby.exec("3*4"), 12);
@@ -54,7 +60,6 @@ function testPolynominalCalc() {
 	assertEquals("calc 3", ruby.exec("2*3*4"), 24);
 	assertEquals("calc 4", ruby.exec("2*3+4"), 10);
 	assertEquals("calc 5", ruby.exec("(2+3)*4"), 20);
-
 	assertEquals("calc 6", ruby.exec("1+2*(((3-4)*5+6)*7-8)+9"), 8);
 }
 
