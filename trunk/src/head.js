@@ -39,7 +39,7 @@ RubyEngine.SAFARI = navigator.userAgent.indexOf("Safari")>0;
 
 RubyEngine.RESERVED = {
   "if":true, "then":true, "elsif":true, "else":true, "end":true,
-  "while":true, "unless":true, "until":true,
+  "while":true, "unless":true, "until":true, "def":true,
   "nil":true
 }
 RubyEngine.OPERATORS = {

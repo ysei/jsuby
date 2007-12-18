@@ -11,6 +11,7 @@ RubyEngine.Parser.prototype.parse = function(body) {
 //  CompStmt: Stmt (Term+ Stmt)*
 RubyEngine.Parser.prototype.compstmt = function() {
 	var x;
+	while(this.term());
 	if ((x=this.stmt())==undefined) return undefined;
 	var ret = [x];
 	var prebody = this.body;
@@ -140,8 +141,8 @@ RubyEngine.Parser.prototype.blockvars = function() {
 	return null
 }
 
-// Primary : ('-'|'+') Primary | Primary2 ( '[' Args ']' | '.'Operation ('(' Args ')')? ('{' ('|'Varname'|')? CompStmt '}')? )* Args?
-// # for removing left recursions of Primary in BNF of Ruby
+// Primary : ('-'|'+') Primary 
+//      | Primary2 ( '['Args']' | '.'Operation ('('Args')')? ('{' ('|'Varname'|')? CompStmt '}')? )* Args?
 RubyEngine.Parser.prototype.primary = function() {
 //console.log(this.body);console.trace();if(!confirm("continue?")) exit();
 	if (this.body.match(/^[ \t]*([-+])/)) {
@@ -150,10 +151,11 @@ RubyEngine.Parser.prototype.primary = function() {
 		this.body = RegExp.rightContext;
   	if ((y=this.primary())!=undefined) {
       if (x=='+') return y;
-  		return new RubyEngine.Node.Expression([new RubyEngine.Node.Operator('neg'), y]);
+  		return new RubyEngine.Node.Expression([new RubyEngine.Node.Operator('-@'), y]);
     }
 		this.body = prebody;
   }
+
 	var prim = this.primary2();
   while(prim != undefined) {
     var y, z=null;
@@ -197,8 +199,7 @@ RubyEngine.Parser.prototype.primary = function() {
 		if (this.body.match(/^[ \t]*(\{)/)) {
 			prebody = this.body;
 			this.body = RegExp.rightContext;
-			y = this.blockvars();
-			while(this.term());
+			y=this.blockvars();  // it is maybe 'undefined'
       z=this.compstmt();
       if (z==undefined) z=null;
 			if (this.body.match(/^\s*\}/)) {
@@ -218,7 +219,8 @@ RubyEngine.Parser.prototype.primary = function() {
 }
 
 //  Primary2: '(' Expr ')' | Literal | Reference | '[' Args ']'
-//         if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
+//        | if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
+//        | def Operation ArgDecl CompStmt end
 //  Literal: / $INT:push | $JS_STRING:push /,
 RubyEngine.Parser.prototype.primary2 = function() {
 	var x, y, z;
@@ -270,14 +272,12 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		this.body = RegExp.rightContext;
 		x = RegExp.$1;
 		if ((y = this.arg())!=undefined && this.then()) {
-			while (this.term());
 			if (z=this.compstmt()) {
 			  var args = [y, z];
 				while (this.body.match(/^[ \s]*(elsif)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
 					if ((y = this.arg()) && this.then()) {
-						while (this.term());
 						if (!(z=this.compstmt())) { this.body = prebody2; break; }
 						args.push(y, z)
 					}
@@ -285,7 +285,6 @@ RubyEngine.Parser.prototype.primary2 = function() {
 				if (this.body.match(/^[ \s]*(else)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
-					while (this.term());
 					if (z=this.compstmt()) { 
 						args.push(true, z)
 					} else {
@@ -300,7 +299,56 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		}
 		this.body = prebody;
 	}
+
+  // def Fname ArgDecl CompStmt end
+	if (this.body.match(/^[ \t]*def/)) {
+		this.body=RegExp.rightContext;
+		x=this.operation();
+		y=this.argdecl();
+		z=this.compstmt();
+		if(x!=undefined && z!=undefined && this.body.match(/^[ \s]*(end)/)) {
+			this.body = RegExp.rightContext;
+  		ret = new RubyEngine.Node.Method("def", null, [new RubyEngine.RubyObject.String(x)]);
+  		ret.block = new RubyEngine.Node.Block(y, z);
+  		return ret;
+    }
+		this.body = prebody;
+	}
+
 	return undefined;
+}
+
+// ArgDecl : `(' ArgList `)' | ArgList Term
+RubyEngine.Parser.prototype.argdecl = function() {
+//console.log(this.body);console.trace();if(!confirm("continue?")) exit();
+  var x;
+	var prebody = this.body;
+	if (this.body.match(/^[ \t]*\(/)) {
+    this.body=RegExp.rightContext;
+    if ((x=this.arglist())!=undefined && this.body.match(/^[ \t]*\)/) ) {
+      this.body=RegExp.rightContext;
+      return x;
+    }
+  } else {
+    if ((x=this.arglist())!=undefined && this.term() ) return x;
+  }
+  this.body=prebody;
+	return undefined;
+}
+
+// ArgList : varname(`,'varname)*[`,'`*'[varname]][`,'`&'varname] | `*'varname[`,'`&'varname] | [`&'varname]
+RubyEngine.Parser.prototype.arglist = function() {
+  var x;
+  if ((x=this.varname())==undefined) return [];
+  var ret=[x], prebody=this.body;
+  while (this.body.match(/^[ \t]*,/)) {
+    prebody=this.body;
+    this.body=RegExp.rightContext;
+    if ((x=this.varname())==undefined) break;
+    ret.push(x);
+  }
+  this.body=prebody;
+  return ret;
 }
 
 RubyEngine.Parser.prototype.then = function() {
