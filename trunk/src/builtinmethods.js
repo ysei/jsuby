@@ -3,6 +3,10 @@
 // 'this' is the interpreter instance.
 
 RubyEngine.Interpreter.KernelMethod = {
+  "def": function(args, block) {
+    var name = args[0].str;
+    this.scope.substitute(name, block);
+  },
   "puts": function(args) {
     if (args && args.length > 0) {
       for(var jdx=0;jdx<args.length;jdx++) {

@@ -70,7 +70,7 @@ RubyEngine.Interpreter.prototype.run = function(node){
 
 	} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(node)) {
     ret = this.scope.reference(node.name);
-    if (typeof(ret) == "function") return ret.apply(this, [node.args]);
+    if (typeof(ret) == "function") return ret.apply(this, [node.args, node.block]);
     return ret;
 
 	} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(node)) {
@@ -80,9 +80,27 @@ RubyEngine.Interpreter.prototype.run = function(node){
 		if (node.target && node.target!=null) {
 			ret = this.objectMethod(node);
 		} else {
-			ret = this.kernelMethod(node);
-		}
+			//ret = this.kernelMethod(node);
 
+      var ref = this.scope.reference(node.name);
+      if (typeof(ref) == "function") {
+        return ref.apply(this, [node.args, node.block]);
+      } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
+        var block = ref;
+        this.scope.pushScope();
+        if (block.vars) {
+          for (var i=0;i<block.vars.length;i++) {
+            var varname = block.vars[i]
+            this.scope.substitute(varname.name, node.args[i]);
+          }
+        }
+        var ret = this.run(block.block);
+        this.scope.popScope();
+        return ret;
+      }
+      return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+node.name+"'", node.name);
+    }
+    return ret;
 	} else {
 		ret = node;
 	}
@@ -150,7 +168,7 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 RubyEngine.Interpreter.prototype.kernelMethod = function(node){
   var method = RubyEngine.Interpreter.KernelMethod[node.name];
   if (typeof(method)=="function") {
-    return method.apply(this, [node.args]);
+    return method.apply(this, [node.args, node.block]);
   } else {
 		alert("undefined method: " + node.name);
 	}
