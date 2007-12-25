@@ -56,6 +56,7 @@ RubyEngine.Parser.prototype.expr2 = function() {
 	return undefined;
 }
 
+
 //  Command: Operation Args
 RubyEngine.Parser.prototype.command = function() {
 	var x, y, z;
@@ -253,7 +254,7 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		this.body = RegExp.rightContext;
 		return new RubyEngine.RubyObject.String(RegExp.$1 || RegExp.$2);
 	} else if (x=this.reference()) {
-		return x;
+		return new RubyEngine.Node.Ref(x);
 	}
 
   // '[' Args ']'
@@ -306,6 +307,7 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		x=this.operation();
 		y=this.argdecl();
 		z=this.compstmt();
+  	while(this.term());
 		if(x!=undefined && z!=undefined && this.body.match(/^[ \s]*(end)/)) {
 			this.body = RegExp.rightContext;
   		ret = new RubyEngine.Node.Method("def", null, [new RubyEngine.RubyObject.String(x)]);
@@ -395,7 +397,7 @@ RubyEngine.Parser.prototype.operator = function() {
 RubyEngine.Parser.prototype.reference = function() {
 	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*[\!\?]?)/) && !RubyEngine.RESERVED[RegExp.$1]) {
 		this.body = RegExp.rightContext;
-		return new RubyEngine.Node.Ref(RegExp.$1);
+		return RegExp.$1;
 	}
 	return undefined;
 }

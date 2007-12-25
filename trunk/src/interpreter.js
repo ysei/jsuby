@@ -7,7 +7,7 @@ RubyEngine.Scope.prototype.clear = function(){
   this.stack = []
   this.global = { "$window": new RubyEngine.RubyObject.JSObject(window), "$document": new RubyEngine.RubyObject.JSObject(document) }
   for(var i in RubyEngine.Interpreter.KernelMethod) {
-    if (i.match(/^[a-z_]/)) this.global[i] = RubyEngine.Interpreter.KernelMethod[i];
+    if (i.match(/^[a-z_\*]/)) this.global[i] = RubyEngine.Interpreter.KernelMethod[i];
   }
   for(var i in RubyEngine.RubyObject) {
     if (i.match(/^[A-Z\$]/)) this.global[i] = RubyEngine.RubyObject[i];
@@ -80,8 +80,6 @@ RubyEngine.Interpreter.prototype.run = function(node){
 		if (node.target && node.target!=null) {
 			ret = this.objectMethod(node);
 		} else {
-			//ret = this.kernelMethod(node);
-
       var ref = this.scope.reference(node.name);
       if (typeof(ref) == "function") {
         return ref.apply(this, [node.args, node.block]);
