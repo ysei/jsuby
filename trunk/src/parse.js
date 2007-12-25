@@ -145,7 +145,6 @@ RubyEngine.Parser.prototype.blockvars = function() {
 // Primary : ('-'|'+') Primary 
 //      | Primary2 ( '['Args']' | '.'Operation ('('Args')')? ('{' ('|'Varname'|')? CompStmt '}')? )* Args?
 RubyEngine.Parser.prototype.primary = function() {
-//console.log(this.body);console.trace();if(!confirm("continue?")) exit();
 	if (this.body.match(/^[ \t]*([-+])/)) {
     var x = RegExp.$1, y;
     var prebody = this.body;
@@ -159,14 +158,15 @@ RubyEngine.Parser.prototype.primary = function() {
 
 	var prim = this.primary2();
   while(prim != undefined) {
-    var y, z=null;
+    var y=undefined, z=null, sep=undefined;
     var prebody = this.body;
 
-		if (!this.body.match(/^[ \t]*(\.|\[)/)) break;
-		this.body = RegExp.rightContext;
-
+		if (this.body.match(/^[ \t]*(\.|\[)/)) {
+      this.body = RegExp.rightContext;
+      sep = RegExp.$1;
+    }
     // '[' Args ']'
-    if (RegExp.$1=='[') {
+    if (sep=='[') {
       y = this.args();
       if (y==undefined || !this.body.match(/^[ \t]*\]/)) {
         this.body = prebody;
@@ -178,7 +178,7 @@ RubyEngine.Parser.prototype.primary = function() {
     }
 
     // '.'Operation
-		if ((y=this.operation()) == undefined) {
+    if (sep=='.' && (y=this.operation()) == undefined ) {
 		  this.body = prebody;
 		  break;
 		}
@@ -194,7 +194,14 @@ RubyEngine.Parser.prototype.primary = function() {
 				z = null;
 			}
     }
-		prim = new RubyEngine.Node.Method(y, prim, z);
+    if (y!=undefined) {
+      prim = new RubyEngine.Node.Method(y, prim, z);
+    } else if (sep==undefined && z!=null && RubyEngine.Node.Ref.prototype.isPrototypeOf(prim)) {
+      prim = new RubyEngine.Node.Method(prim.name, null, z);
+    } else {
+		  this.body = prebody;
+		  break;
+    }
 
     // ('{' ('|'Varname'|')? CompStmt '}')?
 		if (this.body.match(/^[ \t]*(\{)/)) {
@@ -362,7 +369,7 @@ RubyEngine.Parser.prototype.then = function() {
 }
 
 RubyEngine.Parser.prototype.varname = function() {
-	if (this.body.match(/^[ \t]*([A-Za-z_][A-Za-z0-9_]*)/) && !RubyEngine.RESERVED[RegExp.$1]) {
+	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*)/) && !RubyEngine.RESERVED[RegExp.$1]) {
 		this.body = RegExp.rightContext;
 		return new RubyEngine.Node.Variable(RegExp.$1);
 	}
@@ -395,7 +402,7 @@ RubyEngine.Parser.prototype.operator = function() {
 }
 
 RubyEngine.Parser.prototype.reference = function() {
-	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*[\!\?]?)/) && !RubyEngine.RESERVED[RegExp.$1]) {
+	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*)/) && !RubyEngine.RESERVED[RegExp.$1]) {
 		this.body = RegExp.rightContext;
 		return RegExp.$1;
 	}
