@@ -34,7 +34,7 @@ end
 <script type="text/javascript">
 
 var ruby = new RubyEngine.Interpreter();
-ruby.exec( RubyEngine.Util.getRubyScriptList()[0].text );
+ruby.exec( RubyEngine.Util.getRubyScript() );
 
 function testCalcurateMethod() {
 	assertEquals("cal 1", ruby.exec(" test1 3 "),  9);

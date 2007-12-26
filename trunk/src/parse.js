@@ -143,7 +143,7 @@ RubyEngine.Parser.prototype.blockvars = function() {
 }
 
 // Primary : ('-'|'+') Primary 
-//      | Primary2 ( '['Args']' | '.'Operation ('('Args')')? ('{' ('|'Varname'|')? CompStmt '}')? )* Args?
+//      | Primary2 ( '['Args']' | '.'Operation ('('Args')')? (('{'|'do') ('|'Varname'|')? CompStmt ('}'|'end'))? )* Args?
 RubyEngine.Parser.prototype.primary = function() {
 	if (this.body.match(/^[ \t]*([-+])/)) {
     var x = RegExp.$1, y;
@@ -204,13 +204,14 @@ RubyEngine.Parser.prototype.primary = function() {
     }
 
     // ('{' ('|'Varname'|')? CompStmt '}')?
-		if (this.body.match(/^[ \t]*(\{)/)) {
+		if (this.body.match(/^[ \t]*(\{|do)/)) {
+      var br=RegExp.$1;
 			prebody = this.body;
 			this.body = RegExp.rightContext;
 			y=this.blockvars();  // it is maybe 'undefined'
       z=this.compstmt();
       if (z==undefined) z=null;
-			if (this.body.match(/^\s*\}/)) {
+			if ((br=="{" && this.body.match(/^\s*\}/)) || this.body.match(/^\s*end/)) {
 				this.body = RegExp.rightContext;
 				prim.block = new RubyEngine.Node.Block(y, z);
 			} else {

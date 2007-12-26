@@ -25,14 +25,14 @@ RubyEngine.RubyObject.call = function(self, name, args, block){
   }
   return undefined;
 };
-RubyEngine.RubyObject.LikeArray = {"[object Array]":true, "[object HTMLCollection]":true};
+RubyEngine.RubyObject._LikeArray = {"[object Array]":true, "[object HTMLCollection]":true};
 RubyEngine.RubyObject.js2r = function(obj){
   if (obj==undefined) return obj;
   if (obj==null) return obj; // TODO:
   var clzname = Object.prototype.toString.call(obj);
   if (clzname == "[object String]") {                 // string
     return new RubyEngine.RubyObject.String(obj);
-  } else if (clzname in RubyEngine.RubyObject.LikeArray){ // like array (including collection)
+  } else if (clzname in RubyEngine.RubyObject._LikeArray){ // like array (including collection)
     var ary = []
     for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
     var ret = new RubyEngine.RubyObject.Array();

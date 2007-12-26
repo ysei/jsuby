@@ -12,9 +12,20 @@
 <script type="text/javascript" src="../src/builtinmethods.js"></script>
 <script type="text/javascript" src="../src/util.js"></script>
 
+<script type="text/ruby">
+def doeach(n)
+  s = 0
+  (1..n).each do |x|
+    s = s + x
+  end
+  s
+end
+</script>
+
 <script language="JavaScript" type="text/javascript">
 
 var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
 
 function testRange() {
 	assertArrayEquals("rect 1", ruby.exec("(0..0)"), [0]);
@@ -26,11 +37,13 @@ function testRange() {
 function testEach() {
 	assertArrayEquals("each 1", ruby.exec("(1..10).each{}"), [1,2,3,4,5,6,7,8,9,10]);
 	assertEquals("each 2", ruby.exec("s=0;(1..10).each{|x|s=s+x};s"), 55);
+	assertEquals("each 3", ruby.exec(" doeach(20) "), 210);
+	assertEquals("each 4", ruby.exec(" doeach 30 "), 465);
 
 	ruby.scope.clear();
-	assertEquals("each 3 (scope)", ruby.exec("x=0;(1..10).each{|x|};x"), 10);
+	assertEquals("scope 1", ruby.exec("x=0;(1..10).each{|x|};x"), 10);
 	ruby.scope.clear();
-	assertEquals("each 4 (scope)", ruby.exec("    (1..10).each{|x|};x").message, "undefined local variable or method `x'");
+	assertEquals("scope 2", ruby.exec("    (1..10).each{|x|};x").message, "undefined local variable or method `x'");
 }
 
 </script>
