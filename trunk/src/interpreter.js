@@ -13,6 +13,9 @@ RubyEngine.Scope.prototype.clear = function(){
     if (i.match(/^[A-Z\$]/)) this.global[i] = RubyEngine.RubyObject[i];
   }
 }
+RubyEngine.Scope.prototype.globalsubstitute = function(name, value){
+  return this.global[name] = value;
+}
 RubyEngine.Scope.prototype.substitute = function(name, value){
   if (name.match(/^\$/)) {
       return this.global[name] = value;
@@ -33,7 +36,7 @@ RubyEngine.Scope.prototype.reference = function(name){
   if (name in this.global) return this.global[name];
   return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"'", name);
 }
-RubyEngine.Scope.prototype.pushScope = function(){ this.stack.push(this.level); this.level=[{}]; }
+RubyEngine.Scope.prototype.pushScope = function(args){ this.stack.push(this.level); this.level=[args || {}]; }
 RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop(); }
 RubyEngine.Scope.prototype.pushLevel = function(){ this.level.push({}); }
 RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
@@ -68,16 +71,12 @@ RubyEngine.Interpreter.prototype.run = function(node){
 	} else if (RubyEngine.Node.Variable.prototype.isPrototypeOf(node)) {
 		ret = this.scope.reference(node.name);
 
-	} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(node)) {
-    ret = this.scope.reference(node.name);
-    if (typeof(ret) == "function") return ret.apply(this, [node.args, node.block]);
-    return ret;
-
 	} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(node)) {
 		ret = this.calcExpr(node);
 
-	} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(node)) {
-		if (node.target && node.target!=null) {
+	} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(node) || RubyEngine.Node.Ref.prototype.isPrototypeOf(node)) {
+    var t = node.type;
+		if (t=="M" && node.target!=null) {
 			ret = this.objectMethod(node);
 		} else {
       var ref = this.scope.reference(node.name);
@@ -85,16 +84,18 @@ RubyEngine.Interpreter.prototype.run = function(node){
         return ref.apply(this, [node.args, node.block]);
       } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
         var block = ref;
-        this.scope.pushScope();
+        var args = {};
         if (block.vars) {
           for (var i=0;i<block.vars.length;i++) {
-            var varname = block.vars[i]
-            this.scope.substitute(varname.name, node.args[i]);
+            args[block.vars[i].name] = this.run(node.args[i]);
           }
         }
+        this.scope.pushScope(args);
         var ret = this.run(block.block);
         this.scope.popScope();
         return ret;
+      } else if (t=="R") {
+        return ref;
       }
       return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+node.name+"'", node.name);
     }
@@ -116,7 +117,9 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 		} else if (RubyEngine.Node.Variable.prototype.isPrototypeOf(x)) {
 			stk.push( this.scope.reference(x.name) );
 		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
-			stk.push( this.scope.reference(x.name) );
+			stk.push( xx=this.run(x) );
+		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
+			stk.push( this.run(x) );
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {
 			case "-@":
@@ -154,6 +157,14 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 			case "==":
 				var a = stk.pop();
 				stk.push(stk.pop().eql(a));
+				break;
+			case "<":
+				var a = stk.pop();
+				stk.push(stk.pop().cmp(a)<0);
+				break;
+			case ">":
+				var a = stk.pop();
+				stk.push(stk.pop().cmp(a)>0);
 				break;
 			}
 		} else {

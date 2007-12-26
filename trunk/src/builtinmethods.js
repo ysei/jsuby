@@ -5,7 +5,7 @@
 RubyEngine.Interpreter.KernelMethod = {
   "def": function(args, block) {
     var name = args[0].str;
-    this.scope.substitute(name, block);
+    this.scope.globalsubstitute(name, block);
   },
   "puts": function(args) {
     if (args && args.length > 0) {

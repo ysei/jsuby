@@ -19,6 +19,13 @@ end
 def test2(y)
   $test2 = y * 2
 end
+def fib(n)
+  if n<2
+    n
+  else
+    fib(n-1)+fib(n-2)
+  end
+end
 </script>
 
 <script type="text/javascript">
@@ -34,6 +41,14 @@ function testCalcurateMethod() {
 
 function testSetGlobalVariableMethod() {
 	assertEquals("global 1", ruby.exec(" test2 3; $test2 "),  6);
+}
+
+function testRecursion() {
+	assertEquals("fib 1", ruby.exec(" fib(0) "),  0);
+	assertEquals("fib 2", ruby.exec(" fib(1) "),  1);
+	assertEquals("fib 3", ruby.exec(" fib(5) "),  5);
+	assertEquals("fib 4", ruby.exec(" fib(10) "),  55);
+	assertEquals("fib 5", ruby.exec(" fib(15) "),  610);
 }
 
 
