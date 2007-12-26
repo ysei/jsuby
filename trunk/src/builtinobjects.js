@@ -185,7 +185,7 @@ RubyEngine.RubyObject.Array.clz.methods = {
 }
 RubyEngine.RubyObject.Array.methods = {
   "[]": function(self, args, block) {
-    return self.array[args[0].num];
+    return self.array[this.run(args[0]).num];
   },
   "[]=": function(self, args, block) {
     return self.array[args[0].num] = args[1];
@@ -209,7 +209,15 @@ RubyEngine.RubyObject.Array.methods = {
   }
   this.scope.popLevel();
   return self;
- }
+ },
+  "join": function(self, args, block) {
+    var st = "", sep = (args&&args.length>0?args[0].str:""); // TODO: $,
+    for(var i=0;i<self.array.length;i++) {
+      if(i>0) st+=sep;
+      st+=self.array[i].toString();
+    }
+    return new RubyEngine.RubyObject.String(st);
+  }
 };
 
 
