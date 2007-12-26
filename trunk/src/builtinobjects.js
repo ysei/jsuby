@@ -82,6 +82,9 @@ RubyEngine.RubyObject.Numeric.methods = {
   "chr": function(self, args, block) {
     return new RubyEngine.RubyObject.String( String.fromCharCode(self.num) );
   },
+  "to_s": function(self, args, block) {
+    return new RubyEngine.RubyObject.String( String(self.num) );
+  },
   "upto": function(self, args, block) {
     if (!block) return null;
     var varname;

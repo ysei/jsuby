@@ -27,6 +27,7 @@ function testAdd() {
 	assertEquals("string add 1", ruby.exec(" 'a'+'b' "), "ab");
 	assertEquals("string add 2", ruby.exec(" 'd'+'e'+'f' "), "def");
 	assertEquals("string add 3", ruby.exec(" x='u'+'b'; \"r\"+x+\"y\" "), "ruby");
+	assertEquals("string add 4", ruby.exec(" x='ru'; y='b'; z='y'; x + y + z "), "ruby");
 }
 
 function testMul() {
