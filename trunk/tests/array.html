@@ -50,9 +50,10 @@ function testSubstituteBrackett() {
 }
 
 function testJoin() {
-	ruby.exec(' a=["x", "y", "z"] ')
-	assertEquals("join 1", ruby.exec(' a.join '), "xyz");
-	assertEquals("join 2", ruby.exec(' a.join(",") '), "x,y,z");
+	ruby.exec(' a=["x", "y", "z", 3] ')
+	assertEquals("join 1", ruby.exec(' a.join '), "xyz3");
+	assertEquals("join 2", ruby.exec(' a.join(",") '), "x,y,z,3");
+	//assertEquals("join 3", ruby.exec(' [1, 2, [3, 4]].join(",") '), "1,2,3,4"); // TODO:
 }
 
 </script>

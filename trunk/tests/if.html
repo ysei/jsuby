@@ -12,9 +12,18 @@
 <script type="text/javascript" src="../src/builtinmethods.js"></script>
 <script type="text/javascript" src="../src/util.js"></script>
 
-<script language="JavaScript" type="text/javascript">
+<script type="text/ruby">
+def modifier(n)
+	x = 0
+	x = n + 1 if n > 10
+	x
+end
+</script>
+
+<script type="text/javascript">
 
 var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
 
 function testIf() {
 	//assertEquals("if 1", ruby.exec("if false then 99 end"), null);
@@ -41,6 +50,11 @@ function testElsif() {
 	assertEquals("elsif 1", ruby.exec("x=1;" + st), "value1");
 	assertEquals("elsif 2", ruby.exec("x=2;" + st), "value2");
 	assertEquals("elsif 3", ruby.exec("x=3;" + st), "other");
+}
+
+function testIfModifier() {
+	assertEquals("if modifier 1", ruby.exec("modifier 1"), 0);
+	assertEquals("if modifier 2", ruby.exec("modifier 20"), 21);
 }
 
 </script>

@@ -25,31 +25,27 @@ RubyEngine.Parser.prototype.compstmt = function() {
 	return ret;
 }
 
-//  Stmt : Expr
+//  Stmt: Expr (if Expr|unless Expr|while Expr)*
 RubyEngine.Parser.prototype.stmt = function() {
-	return this.expr();
-}
-
-//  Expr: Expr2 (if Expr2|unless Expr2|while Expr2)*
-RubyEngine.Parser.prototype.expr = function() {
 	var x, y;
-	if ((x=this.expr2())==undefined) return undefined;
+	if ((x=this.expr())==undefined) return undefined;
 	var ret = [x]
 	while (this.body.match(/^[ \t]*(if|unless|while|until)/)) {
 		var prebody = this.body;
 		this.body = RegExp.rightContext;
 		x = RegExp.$1;
-		if (!(y=this.expr2())) {
+		if (!(y=this.expr())) {
 			this.body = prebody;
 			break;
 		}
-		ret.push(x, y);
+		ret.unshift(y);
+		ret = new RubyEngine.Node.Method(x, null, ret);
 	}
 	return ret;
 }
 
-//  Expr2: Command | Arg 
-RubyEngine.Parser.prototype.expr2 = function() {
+//  Expr: Command | Arg 
+RubyEngine.Parser.prototype.expr = function() {
 	var x;
 	if ((x=this.command())!=undefined) return x;
 	if ((x=this.arg())!=undefined) return x;
@@ -59,7 +55,7 @@ RubyEngine.Parser.prototype.expr2 = function() {
 
 //  Command: Operation Args
 RubyEngine.Parser.prototype.command = function() {
-	var x, y, z;
+	var x, y;
 	var prebody = this.body;
 	if (x=this.operation()) {
 		if (this.body.match(/^[ \t]+[^\-\+]/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
@@ -226,7 +222,7 @@ RubyEngine.Parser.prototype.primary = function() {
   return prim;
 }
 
-//  Primary2: '(' Expr ')' | Literal | Reference | '[' Args ']'
+//  Primary2: '(' Stmt ')' | Literal | Reference | '[' Args ']'
 //        | if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
 //        | def Operation ArgDecl CompStmt end
 //  Literal: / $INT:push | $JS_STRING:push /,
@@ -235,7 +231,7 @@ RubyEngine.Parser.prototype.primary2 = function() {
 	var prebody = this.body;
 	if (this.body.match(/^[ \t]*(\()/)) {
 		this.body = RegExp.rightContext;
-		if ((x = this.expr()) && this.body.match(/^[ \t]*(\))/)) {
+		if ((x = this.stmt()) && this.body.match(/^[ \t]*(\))/)) {
 			this.body = RegExp.rightContext;
 			return x;
 		}
