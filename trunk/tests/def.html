@@ -19,6 +19,9 @@ end
 def test2(y)
   $test2 = y * 2
 end
+def test3(a, b, c)
+  (a + b) * c
+end
 def fib(n)
   if n<2
     n
@@ -41,6 +44,11 @@ function testCalcurateMethod() {
 
 function testSetGlobalVariableMethod() {
 	assertEquals("global 1", ruby.exec(" test2 3; $test2 "),  6);
+}
+
+function testPluralArguments() {
+	assertEquals("plural 1", ruby.exec(" test3 1, 2, 3 "),  9);
+	assertEquals("plural 2", ruby.exec(" test3( 2, 3, 4 ) "),  20);
 }
 
 function testRecursion() {

@@ -62,7 +62,7 @@ RubyEngine.Parser.prototype.command = function() {
 	var x, y, z;
 	var prebody = this.body;
 	if (x=this.operation()) {
-		if (this.body.match(/^[ \t]+/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
+		if (this.body.match(/^[ \t]+[^\-\+]/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
 		this.body=prebody;
 	}
 	return undefined;
@@ -329,7 +329,6 @@ RubyEngine.Parser.prototype.primary2 = function() {
 
 // ArgDecl : `(' ArgList `)' | ArgList Term
 RubyEngine.Parser.prototype.argdecl = function() {
-//console.log(this.body);console.trace();if(!confirm("continue?")) exit();
   var x;
 	var prebody = this.body;
 	if (this.body.match(/^[ \t]*\(/)) {
@@ -351,10 +350,10 @@ RubyEngine.Parser.prototype.arglist = function() {
   if ((x=this.varname())==undefined) return [];
   var ret=[x], prebody=this.body;
   while (this.body.match(/^[ \t]*,/)) {
-    prebody=this.body;
     this.body=RegExp.rightContext;
     if ((x=this.varname())==undefined) break;
     ret.push(x);
+    prebody=this.body;
   }
   this.body=prebody;
   return ret;

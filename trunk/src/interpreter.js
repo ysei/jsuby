@@ -166,6 +166,10 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 				var a = stk.pop();
 				stk.push(stk.pop().cmp(a)>0);
 				break;
+			case ">=":
+				var a = stk.pop();
+				stk.push(stk.pop().cmp(a)>=0);
+				break;
 			}
 		} else {
 			stk.push(x);

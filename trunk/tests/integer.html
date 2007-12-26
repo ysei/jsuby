@@ -53,8 +53,12 @@ function testBinominalCalc() {
 	assertEquals("calc 5", ruby.exec("3**4"), 81);
 	assertFalse("calc 6", ruby.exec("3==4") );
 	assertTrue("calc 7", ruby.exec("4==4") );
-	assertEquals("calc 8", ruby.exec("-3+4"),  1);
-	assertEquals("calc 8", ruby.exec("-3*4"),  -12);
+	assertTrue("calc 8", ruby.exec("3<4") );
+	assertFalse("calc 9", ruby.exec("4<3") );
+	assertTrue("calc 10", ruby.exec("4>3") );
+	assertFalse("calc 11", ruby.exec("3>4") );
+	assertEquals("calc 12", ruby.exec("-3+4"),  1);
+	assertEquals("calc 13", ruby.exec("-3*4"),  -12);
 }
 function testPolynominalCalc() {
 	assertEquals("calc 1", ruby.exec("2+3+4"),  9);
