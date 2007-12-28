@@ -37,6 +37,7 @@ function testBrackett() {
 	assertEquals("array[nth] 1", ruby.exec(' a[0] '), "x");
 	assertEquals("array[nth] 2", ruby.exec(' a[1] '), "y");
 	//assertEquals("array[nth] 3", ruby.exec(' a[-1] '), "z");  // TODO:
+	assertEquals("array[nth] 4", ruby.exec(' n=2; a[n] '), "z");
 
 	ruby.exec(' a=[[1, 2], [3, 4]] ')
 	assertEquals("array[nth] 4", ruby.exec(' a[1][0] '), 3);
@@ -45,8 +46,9 @@ function testBrackett() {
 function testSubstituteBrackett() {
 	ruby.exec(' a=["x", "y", "z"] ')
 	assertArrayEquals("array[nth]= 1", ruby.exec(' a[1] = "ruby"; a '), ["x", "ruby", "z"]);
+	assertArrayEquals("array[nth]= 2", ruby.exec(' n=2; a[n] = "foo"; a '), ["x", "ruby", "foo"]);
 	ruby.exec(' a=[[1, 2], [3, 4]] ')
-	assertArrayEquals("array[nth]= 2", ruby.exec(' a[0][1] = 9; a '), [[1, 9], [3, 4]]);
+	assertArrayEquals("array[nth]= 3", ruby.exec(' a[0][1] = 9; a '), [[1, 9], [3, 4]]);
 }
 
 function testJoin() {

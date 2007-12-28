@@ -87,10 +87,10 @@ RubyEngine.RubyObject.Numeric.methods = {
   },
   "upto": function(self, args, block) {
     if (!block) return null;
-    var varname;
+    var varname, to=this.run(args[0]).num;
     if (block.vars) varname = block.vars[0].name;
     this.scope.pushLevel();
-    for(var i=self.num; i<=args[0].num; i++) {
+    for(var i=self.num; i<=to; i++) {
     	if (varname) this.scope.substitute(varname, new RubyEngine.RubyObject.Numeric(i));
     	this.run(block.block);
     }
@@ -131,10 +131,10 @@ RubyEngine.RubyObject.String.methods = {
     return new RubyEngine.RubyObject.Numeric(v);
   },
   "[]": function(self, args, block) {
-    return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(args[0]));
+    return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(this.run(args[0]).num));
   },
   "[]=": function(self, args, block) {
-    var x = args[0].num;
+    var x = this.run(args[0]).num;
     if (RubyEngine.RubyObject.String.prototype.isPrototypeOf(args[1])) {
       self.str = self.str.substr(0,x) + args[1].str + self.str.substr(x+1);
       return args[1];
@@ -188,7 +188,7 @@ RubyEngine.RubyObject.Array.methods = {
     return self.array[this.run(args[0]).num];
   },
   "[]=": function(self, args, block) {
-    return self.array[args[0].num] = args[1];
+    return self.array[this.run(args[0]).num] = this.run(args[1]);
   },
   "length": function(self, args, block) {
     return new RubyEngine.RubyObject.Numeric(self.array.length);
@@ -211,7 +211,7 @@ RubyEngine.RubyObject.Array.methods = {
   return self;
  },
   "join": function(self, args, block) {
-    var st = "", sep = (args&&args.length>0?args[0].str:""); // TODO: $,
+    var st = "", sep = (args&&args.length>0?this.run(args[0]).str:""); // TODO: $,
     for(var i=0;i<self.array.length;i++) {
       if(i>0) st+=sep;
       st+=self.array[i].toString();
@@ -256,11 +256,11 @@ RubyEngine.RubyObject.JSObject.prototype.toString = function(){ return this.obj.
 RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; }
 RubyEngine.RubyObject.JSObject.methods = {
  "method_missing": function(self, args, block) {
-    var name = args[0].str;
+    var name = this.run(args[0]).str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
     } else if (name[name.length-1] == "=") {
-      self.obj[name.slice(0, name.length-1)] = args[1].toValue();
+      self.obj[name.slice(0, name.length-1)] = this.run(args[1]).toValue();
     } else {
       if (name in self.obj) {
         if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera

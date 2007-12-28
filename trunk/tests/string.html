@@ -60,11 +60,13 @@ function testBrackett() {
 	assertEquals("string[nth] 1", ruby.exec(' "ABC"[0] '), 65);
 	assertEquals("string[nth] 2", ruby.exec(' "ABC"[1] '), 66);
 	//assertEquals("string[nth] 3", ruby.exec(' "ABC"[-1] '), 67);
+	assertEquals("string[nth] 4", ruby.exec(' n=2; "ABC"[n] '), 67);
 }
 
 function testSubstituteBrackett() {
 	assertEquals("string[nth]= 1", ruby.exec(' a="abc"; a[1]=66; a '), "aBc");
 	assertEquals("string[nth]= 2", ruby.exec(' a="abc"; a[1]="XYZ"; a '), "aXYZc");
+	assertEquals("string[nth]= 3", ruby.exec(' a="abc"; n=2; a[n]="XYZ"; a '), "abXYZ");
 }
 
 </script>
