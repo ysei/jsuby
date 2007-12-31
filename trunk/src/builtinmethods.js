@@ -25,6 +25,13 @@ RubyEngine.Interpreter.KernelMethod = {
   "*let": function(args) {
     return this.scope.substitute(args[0].name, this.run(args[1]));
   },
+  "*concat": function(args) {
+    var st="";
+    if (args && args.length > 0) {
+      for(var i=0;i<args.length;i++) st+=this.run(args[i]).toString();
+    }
+    return new RubyEngine.RubyObject.String(st);
+  },
   "p": function(args) {
     if (args && args.length > 0) {
       for (var i=0; i<args.length; i++) {

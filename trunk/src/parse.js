@@ -344,7 +344,11 @@ RubyEngine.Parser.prototype.strLiteral = function() {
     if (this.body.match(/^((?:[^\\"]|\\.)*?)"/)) {
       this.body=RegExp.rightContext;
       if ((x=RegExp.$1)!="") ret.push(new RubyEngine.RubyObject.String(x));
-      return new RubyEngine.Node.Method("join", new RubyEngine.Node.Method("new", RubyEngine.RubyObject.Array, ret), null);
+      if (ret.length==1 && RubyEngine.RubyObject.String.prototype.isPrototypeOf(ret[0])) {
+        return ret[0];
+      } else {
+        return new RubyEngine.Node.Method("*concat", null, ret);
+      }
     }
   }
   this.body=prebody;
