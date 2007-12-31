@@ -135,14 +135,12 @@ RubyEngine.RubyObject.String.methods = {
   },
   "[]=": function(self, args, block) {
     var x = this.run(args[0]).num;
-    if (RubyEngine.RubyObject.String.prototype.isPrototypeOf(args[1])) {
-      self.str = self.str.substr(0,x) + args[1].str + self.str.substr(x+1);
-      return args[1];
-    } else if (RubyEngine.RubyObject.Numeric.prototype.isPrototypeOf(args[1])) {
+    if (RubyEngine.RubyObject.Numeric.prototype.isPrototypeOf(args[1])) {
       self.str = self.str.substr(0,x) + String.fromCharCode(args[1].num) + self.str.substr(x+1);
       return args[1];
     } else {
-      // TODO: error
+      self.str = self.str.substr(0,x) + this.run(args[1]).toString() + self.str.substr(x+1);
+      return args[1];
     }
   }
 };

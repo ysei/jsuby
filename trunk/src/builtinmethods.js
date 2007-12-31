@@ -28,7 +28,7 @@ RubyEngine.Interpreter.KernelMethod = {
   "p": function(args) {
     if (args && args.length > 0) {
       for (var i=0; i<args.length; i++) {
-        this.writeStdout(args[i].toSource() + "\n");
+        this.writeStdout(this.run(args[i]).toSource() + "\n");
       }
     }
   }

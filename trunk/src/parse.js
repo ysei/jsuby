@@ -225,7 +225,7 @@ RubyEngine.Parser.prototype.primary = function() {
 //  Primary2: '(' Stmt ')' | Literal | Reference | '[' Args ']'
 //        | if Arg Then CompStmt (elsif Arg Then CompStmt)* (else CompStmt)? end
 //        | def Operation ArgDecl CompStmt end
-//  Literal: / $INT:push | $JS_STRING:push /,
+//  Literal: / $INT | StrLiteral /,
 RubyEngine.Parser.prototype.primary2 = function() {
 	var x, y, z;
 	var prebody = this.body;
@@ -253,10 +253,9 @@ RubyEngine.Parser.prototype.primary2 = function() {
   } else if (this.body.match(/^[ \t]*\?(.)/)) { // ?a
 		this.body = RegExp.rightContext;
 		return new RubyEngine.RubyObject.Numeric(RegExp.$1.charCodeAt(0));
-	} else if (this.body.match(/^[ \t]*"((?:[^\\"]|\\.)*)"|^[ \t]*'((?:[^\\']|\\.)*)'/)) { //"
-		this.body = RegExp.rightContext;
-		return new RubyEngine.RubyObject.String(RegExp.$1 || RegExp.$2);
-	} else if (x=this.reference()) {
+	} else if ((x=this.strLiteral())!=undefined) {
+		return x;
+	} else if ((x=this.reference())!=undefined) {
 		return new RubyEngine.Node.Ref(x);
 	}
 
@@ -321,6 +320,35 @@ RubyEngine.Parser.prototype.primary2 = function() {
 	}
 
 	return undefined;
+}
+
+// StrLiteral : '[^']*' | "( [^"]*? #{ CompStmt } )* [^"]*?"
+RubyEngine.Parser.prototype.strLiteral = function() {
+  var prebody = this.body;
+	if (this.body.match(/^[ \t]*'((?:[^\\']|\\.)*)'/)) {
+    this.body=RegExp.rightContext;
+    return new RubyEngine.RubyObject.String(RegExp.$1);
+  } else if (this.body.match(/^[ \t]*"/)) { //"
+    this.body=RegExp.rightContext;
+    var ret = [], x;
+    while (this.body.match(/^((?:[^\\"]|\\.)*?)#{/)) { //"
+      this.body=RegExp.rightContext;
+      if ((x=RegExp.$1)!="") ret.push(new RubyEngine.RubyObject.String(x));
+      if ((x=this.compstmt())==undefined || !this.body.match(/^\s*}/)) {
+        this.body=prebody;
+        return undefined;
+      }
+      this.body=RegExp.rightContext;
+      ret.push(x);
+    }
+    if (this.body.match(/^((?:[^\\"]|\\.)*?)"/)) {
+      this.body=RegExp.rightContext;
+      if ((x=RegExp.$1)!="") ret.push(new RubyEngine.RubyObject.String(x));
+      return new RubyEngine.Node.Method("join", new RubyEngine.Node.Method("new", RubyEngine.RubyObject.Array, ret), null);
+    }
+  }
+  this.body=prebody;
+  return undefined;
 }
 
 // ArgDecl : `(' ArgList `)' | ArgList Term
