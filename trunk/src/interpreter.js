@@ -1,7 +1,10 @@
 //// Interpreter /////////////////////////////////////////////////////
 
 RubyEngine.Scope = function(){ this.clear(); }
-
+RubyEngine.Scope.prototype.pushScope = function(args){ this.stack.push(this.level); this.level=[args || {}]; }
+RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop(); }
+RubyEngine.Scope.prototype.pushLevel = function(){ this.level.push({}); }
+RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
 RubyEngine.Scope.prototype.clear = function(){
   this.level = [{}]
   this.stack = []
@@ -13,6 +16,7 @@ RubyEngine.Scope.prototype.clear = function(){
     if (i.match(/^[A-Z\$]/)) this.global[i] = RubyEngine.RubyObject[i];
   }
 }
+
 RubyEngine.Scope.prototype.globalsubstitute = function(name, value){
   return this.global[name] = value;
 }
@@ -36,11 +40,27 @@ RubyEngine.Scope.prototype.reference = function(name){
   if (name in this.global) return this.global[name];
   return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"'", name);
 }
-RubyEngine.Scope.prototype.pushScope = function(args){ this.stack.push(this.level); this.level=[args || {}]; }
-RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop(); }
-RubyEngine.Scope.prototype.pushLevel = function(){ this.level.push({}); }
-RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
-
+RubyEngine.Scope.prototype.call = function(name, args, block, refflag) {
+  var ref = this.scope.reference(name);
+  if (typeof(ref) == "function") {
+    return ref.apply(this, [args, block]);
+  } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
+    var block = ref;
+    var newargs = {};
+    if (block.vars) {
+      for (var i=0;i<block.vars.length;i++) {
+        newargs[block.vars[i].name] = this.run(args[i]);
+      }
+    }
+    this.scope.pushScope(newargs);
+    var ret = this.run(block.block);
+    this.scope.popScope();
+    return ret;
+  } else if (refflag) {
+    return ref;
+  }
+  return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+node.name+"'", node.name);
+}
 
 
 RubyEngine.Interpreter = function(){
@@ -79,25 +99,7 @@ RubyEngine.Interpreter.prototype.run = function(node){
 		if (t=="M" && node.target!=null) {
 			ret = this.objectMethod(node);
 		} else {
-      var ref = this.scope.reference(node.name);
-      if (typeof(ref) == "function") {
-        return ref.apply(this, [node.args, node.block]);
-      } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
-        var block = ref;
-        var args = {};
-        if (block.vars) {
-          for (var i=0;i<block.vars.length;i++) {
-            args[block.vars[i].name] = this.run(node.args[i]);
-          }
-        }
-        this.scope.pushScope(args);
-        var ret = this.run(block.block);
-        this.scope.popScope();
-        return ret;
-      } else if (t=="R") {
-        return ref;
-      }
-      return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+node.name+"'", node.name);
+      return this.scope.call.apply(this, [node.name, node.args, node.block, (t=="R")]);
     }
     return ret;
 	} else {
@@ -176,6 +178,12 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 		}
 	}
 	return stk.pop();
+}
+
+RubyEngine.Interpreter.prototype.call = function(name, args){
+  var newargs=[];
+  for(var i=0;i<args.length;i++) newargs.push(RubyEngine.RubyObject.js2r(args[i]));
+  return this.scope.call.apply(this, [name, newargs, null, true]).toValue();
 }
 
 RubyEngine.Interpreter.prototype.kernelMethod = function(node){
