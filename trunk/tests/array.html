@@ -58,6 +58,18 @@ function testJoin() {
 	//assertEquals("join 3", ruby.exec(' [1, 2, [3, 4]].join(",") '), "1,2,3,4"); // TODO:
 }
 
+function testInject() {
+	assertEquals("inject 1", ruby.exec(' [3,1,4,1,5,9].inject{|a,b| a+b} '), 23);
+}
+
+function testPush() {
+	ruby.exec(" a=[] ");
+	assertArrayEquals("push 1", ruby.exec(' a.push("r") '), ["r"]);
+	assertArrayEquals("push 2", ruby.exec(' a.push("u").push("b") '), ["r", "u", "b"]);
+	assertArrayEquals("push 3", ruby.exec(' a.push("y", "r", "u") '), ["r", "u", "b", "y", "r", "u"]);
+	assertArrayEquals("push 4", ruby.exec(' a << "b" << "y" '), ["r", "u", "b", "y", "r", "u", "b", "y"]);
+}
+
 </script>
 </head>
 </html>

@@ -3,7 +3,7 @@
 RubyEngine.Scope = function(){ this.clear(); }
 RubyEngine.Scope.prototype.pushScope = function(args){ this.stack.push(this.level); this.level=[args || {}]; }
 RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop(); }
-RubyEngine.Scope.prototype.pushLevel = function(){ this.level.push({}); }
+RubyEngine.Scope.prototype.pushLevel = function(args){ this.level.push(args || {}); }
 RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
 RubyEngine.Scope.prototype.clear = function(){
   this.level = [{}]
@@ -171,6 +171,10 @@ RubyEngine.Interpreter.prototype.calcExpr = function(node){
 			case ">=":
 				var a = stk.pop();
 				stk.push(stk.pop().cmp(a)>=0);
+				break;
+			case "<<":
+				var a = stk.pop();
+				stk.push(stk.pop().sft(a));
 				break;
 			}
 		} else {

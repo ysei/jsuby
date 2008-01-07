@@ -58,7 +58,7 @@ RubyEngine.Parser.prototype.command = function() {
 	var x, y;
 	var prebody = this.body;
 	if (x=this.operation()) {
-		if (this.body.match(/^[ \t]+[^\-\+]/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
+		if (this.body.match(/^[ \t]+[^\-\+]|^[ \t]*"/) && (y=this.args())) return new RubyEngine.Node.Method(x, null, y);
 		this.body=prebody;
 	}
 	return undefined;
@@ -125,17 +125,18 @@ RubyEngine.Parser.prototype.arg = function() {
 }
 
 RubyEngine.Parser.prototype.blockvars = function() {
-	var x;
+	var ret=[];
 	var prebody = this.body;
 	if (this.body.match(/^[ \t]*(\|)/)) {
 		this.body = RegExp.rightContext;
-		if ((x = this.varname()) && this.body.match(/^[ \t]*(\|)/)) {
+		while ((x = this.varname()) && this.body.match(/^[ \t]*(,|\|)/)) {
+      ret.push(x);
 			this.body = RegExp.rightContext;
-			return [x];
+			if (RegExp.$1=="|") return ret;
 		}
 		this.body = prebody;
 	}
-	return null
+	return undefined;
 }
 
 // Primary : ('-'|'+') Primary 
@@ -426,7 +427,7 @@ RubyEngine.Parser.prototype.comma = function() {
 }
 
 RubyEngine.Parser.prototype.operator = function() {
-	if (this.body.match(/^[ \t]*(\.\.|\+|\-|\*{1,2}|\/|%|==|[<>]=?|&&|\|\||<<|>>)/)) {
+	if (this.body.match(/^[ \t]*(\.\.|\+|\-|\*{1,2}|\/|%|==|<<|>>|[<>]=?|&&|\|\|)/)) {
 		this.body = RegExp.rightContext;
 		return new RubyEngine.Node.Operator(RegExp.$1);
 	}

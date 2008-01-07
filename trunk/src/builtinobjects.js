@@ -172,6 +172,10 @@ RubyEngine.RubyObject.Array.prototype.toString = function(){
   }
   return ret + "]";
 }
+RubyEngine.RubyObject.Array.prototype.sft = function(x){
+  this.array.push(x);
+  return this;
+}
 RubyEngine.RubyObject.Array.clz.methods = {
   "new": function(self, args, block) {
     var obj = new RubyEngine.RubyObject.Array();
@@ -184,6 +188,12 @@ RubyEngine.RubyObject.Array.clz.methods = {
 RubyEngine.RubyObject.Array.methods = {
   "[]": function(self, args, block) {
     return self.array[this.run(args[0]).num];
+  },
+  "push": function(self, args, block) {
+    if(args){
+      for(var i=0;i<args.length;i++) self.array.push(this.run(args[i]));
+    }
+    return self;
   },
   "[]=": function(self, args, block) {
     return self.array[this.run(args[0]).num] = this.run(args[1]);
@@ -208,6 +218,26 @@ RubyEngine.RubyObject.Array.methods = {
   this.scope.popLevel();
   return self;
  },
+  "inject": function(self, args, block) {
+    if (!block) return null;
+    var i=0,r;
+    if(args && args.length>0){
+      r=this.run(args[0]);
+    } else {
+      r=self.array[i++];
+    }
+    while(i<self.array.length){
+      var newargs = {};
+      if (block.vars) {
+        if (block.vars.length>0) newargs[block.vars[0].name] = r;
+        if (block.vars.length>1) newargs[block.vars[1].name] = self.array[i++];
+      }
+      this.scope.pushLevel(newargs);
+      r = this.run(block.block);
+      this.scope.popLevel();
+    }
+    return r;
+  },
   "join": function(self, args, block) {
     var st = "", sep = (args&&args.length>0?this.run(args[0]).str:""); // TODO: $,
     for(var i=0;i<self.array.length;i++) {
