@@ -228,6 +228,7 @@ RubyEngine.Parser.prototype.primary = function() {
 //        | def Operation ArgDecl CompStmt end
 //  Literal: / $INT | StrLiteral /,
 RubyEngine.Parser.prototype.primary2 = function() {
+//console.log(this.body);console.trace();if(!confirm("continue?"))exit();
 	var x, y, z;
 	var prebody = this.body;
 	if (this.body.match(/^[ \t]*(\()/)) {
@@ -435,7 +436,7 @@ RubyEngine.Parser.prototype.operator = function() {
 }
 
 RubyEngine.Parser.prototype.reference = function() {
-	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*)/) && !RubyEngine.RESERVED[RegExp.$1]) {
+	if (this.body.match(/^[ \t]*([A-Za-z_\$][A-Za-z0-9_]*[\!\?]?)/) && !RubyEngine.RESERVED[RegExp.$1]) {
 		this.body = RegExp.rightContext;
 		return RegExp.$1;
 	}

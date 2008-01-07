@@ -201,23 +201,30 @@ RubyEngine.RubyObject.Array.methods = {
   "length": function(self, args, block) {
     return new RubyEngine.RubyObject.Numeric(self.array.length);
   },
+  "member?": function(self, args, block) {
+    var x=this.run(args[0]);
+    for(var i=0;i<self.array.length;i++) {
+      if (x.eql(self.array[i])) return true;
+    }
+    return false;
+  },
   "reverse": function(self, args, block) {
     var ret = new RubyEngine.RubyObject.Array();
     ret.array = self.array.reverse;
     return ret;
   },
- "each": function(self, args, block) {
-  if (!block) return null;
-  var varname;
-  if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
-  this.scope.pushLevel();
-  for(var i=0;i<self.array.length;i++) {
-  	if (varname) this.scope.substitute(varname, self.array[i]);
-  	this.run(block.block);
-  }
-  this.scope.popLevel();
-  return self;
- },
+  "each": function(self, args, block) {
+    if (!block) return null;
+    var varname;
+    if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
+    this.scope.pushLevel();
+    for(var i=0;i<self.array.length;i++) {
+    	if (varname) this.scope.substitute(varname, self.array[i]);
+    	this.run(block.block);
+    }
+    this.scope.popLevel();
+    return self;
+  },
   "inject": function(self, args, block) {
     if (!block) return null;
     var i=0,r;

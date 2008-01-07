@@ -70,6 +70,12 @@ function testPush() {
 	assertArrayEquals("push 4", ruby.exec(' a << "b" << "y" '), ["r", "u", "b", "y", "r", "u", "b", "y"]);
 }
 
+function testMember() {
+	assertTrue("member? 1", ruby.exec(' [1,2,3,4].member?(1) '));
+	assertTrue("member? 2", ruby.exec(' [1,2,3,4].member?(2*2) '));
+	assertFalse("member? 3", ruby.exec(' [1,2,3,4].member?(5) '));
+}
+
 </script>
 </head>
 </html>
