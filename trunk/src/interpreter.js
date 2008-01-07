@@ -6,9 +6,10 @@ RubyEngine.Scope.prototype.popScope = function(){ this.level = this.stack.pop();
 RubyEngine.Scope.prototype.pushLevel = function(args){ this.level.push(args || {}); }
 RubyEngine.Scope.prototype.popLevel = function(){ this.level.pop(); }
 RubyEngine.Scope.prototype.clear = function(){
-  this.level = [{}]
-  this.stack = []
-  this.global = { "$window": new RubyEngine.RubyObject.JSObject(window), "$document": new RubyEngine.RubyObject.JSObject(document) }
+  this.level = [{}];
+  this.stack = [];
+  this.global = {};
+  if (typeof(window)!='undefined') this.global={"$window": new RubyEngine.RubyObject.JSObject(window), "$document": new RubyEngine.RubyObject.JSObject(document) };
   for(var i in RubyEngine.Interpreter.KernelMethod) {
     if (i.match(/^[a-z_\*]/)) this.global[i] = RubyEngine.Interpreter.KernelMethod[i];
   }
