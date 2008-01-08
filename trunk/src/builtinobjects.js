@@ -298,12 +298,19 @@ RubyEngine.RubyObject.JSObject = RubyEngine.RubyObject.inherit(RubyEngine.RubyOb
 RubyEngine.RubyObject.JSObject.prototype.toString = function(){ return this.obj.toString(); }
 RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; }
 RubyEngine.RubyObject.JSObject.methods = {
- "method_missing": function(self, args, block) {
+  "new": function(self, args, block) {
+    var jsargs = [];
+    if(args) for (var i=1;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
+    return RubyEngine.RubyObject.js2r(new self.obj());
+  },
+  "method_missing": function(self, args, block) {
     var name = this.run(args[0]).str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
     } else if (name[name.length-1] == "=") {
-      self.obj[name.slice(0, name.length-1)] = this.run(args[1]).toValue();
+      var v=this.run(args[1])
+      self.obj[name.slice(0, name.length-1)] = v.toValue();
+      return v;
     } else {
       if (name in self.obj) {
         if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera

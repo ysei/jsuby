@@ -45,6 +45,8 @@ RubyEngine.Scope.prototype.call = function(name, args, block, refflag) {
   var ref = this.scope.reference(name);
   if (typeof(ref) == "function") {
     return ref.apply(this, [args, block]);
+  } else if (RubyEngine.RubyObject.JSObject.prototype.isPrototypeOf(ref)) {
+    return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, args));
   } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
     var block = ref;
     var newargs = {};
@@ -192,7 +194,8 @@ RubyEngine.Interpreter.prototype.call = function(name, args){
 }
 
 RubyEngine.Interpreter.prototype.kernelMethod = function(node){
-  var method = RubyEngine.Interpreter.KernelMethod[node.name];
+  //var method = RubyEngine.Interpreter.KernelMethod[node.name];
+  var method = this.scope.reference(node.name);
   if (typeof(method)=="function") {
     return method.apply(this, [node.args, node.block]);
   } else {
