@@ -33,7 +33,7 @@ RubyEngine.Node.Method.prototype.toSource = function(){
 }
 RubyEngine.Node.Method.prototype.clone = function(){
   var args=[];
-  for(var i=0;i<this.args.length;i++) args.push(this.args[i]);
+  if(this.args) for(var i=0;i<this.args.length;i++) args.push(this.args[i]);
   return new RubyEngine.Node.Method(this.name,this.target,args);
 }
 
