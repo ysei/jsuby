@@ -90,15 +90,18 @@ RubyEngine.Parser.prototype.args = function() {
 	return ret;
 }
 
-// Arg: Lhs '=' Arg | Primary (Operator Primary)*
+// Arg: Lhs ('=' | Operator'=') Arg | Primary (Operator Primary)*
 RubyEngine.Parser.prototype.arg = function() {
-	var x, y;
+	var x, y, z;
 	var prebody = this.body;
 	if (x=this.lhs()) {
-		if (this.body.match(/^[ \t]*\=/)) {
+		if (this.body.match(/^[ \t]*(\+|\-|\*|\/)?\=/)) {
+      z = RegExp.$1;
 			this.body = RegExp.rightContext;
 			if ((y=this.arg())!=undefined) {
+        if (z) y = new RubyEngine.Node.Expression([x, new RubyEngine.Node.Operator(z), y]);
         if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
+          x = x.clone();
           x.name += "=";
           if (x.args) { x.args.push(y); } else { x.args = [y]; }
           return x;
@@ -106,7 +109,7 @@ RubyEngine.Parser.prototype.arg = function() {
           return new RubyEngine.Node.Method("*let", null, [x, y]);
         }
       }
-		}
+    }
 		this.body=prebody;
 	}
 

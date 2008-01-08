@@ -33,6 +33,27 @@ function testSubstitute() {
 	assertEquals("substitute 4", ruby.exec("x=3;y=6;-x+y"),  3);
 }
 
+function testAssignmentOperator4Num() {
+	ruby.exec(" a=1 ")
+	assertEquals("assignment operator 1", ruby.exec(" a+=2 "), 3);
+	assertEquals("assignment operator 2", ruby.exec(" a+=3; a "), 6);
+	assertEquals("assignment operator 3", ruby.exec(" a+=2*2 "), 10);
+	assertEquals("assignment operator 4", ruby.exec(" a*=2+2 "), 40);
+	assertEquals("assignment operator 5", ruby.exec(" a-=4 "), 36);
+	assertEquals("assignment operator 6", ruby.exec(" a/=4 "), 9);
+}
+
+function testAssignmentOperator4Str() {
+	ruby.exec(" a='abc' ")
+	assertEquals("assignment operator 1", ruby.exec(" a+='def' "), "abcdef");
+	assertEquals("assignment operator 2", ruby.exec(" a+='ghi';a "), "abcdefghi");
+}
+
+function testAssignmentOperator4Array() {
+	ruby.exec(" a=['abc', 'def'] ")
+	assertArrayEquals("assignment operator 1", ruby.exec(" a[0]+='ruby'; a "), ['abcruby', 'def']);
+	assertArrayEquals("assignment operator 2", ruby.exec(" a[1]+='ruby'; a "), ['abcruby', 'defruby']);
+}
 
 </script>
 </head>

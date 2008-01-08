@@ -125,6 +125,14 @@ RubyEngine.RubyObject.String.methods = {
     for(var i=self.str.length-1;i>=0;i--) st += self.str.charAt(i);
     return new RubyEngine.RubyObject.String(st);
   },
+  "center": function(self, args, block) {
+    var len=this.run(args[0]).num;
+    var st = "";
+    for(var i=(len-self.str.length-1)/2;i>0;i--) st += " ";
+    st += self.str;
+    while(st.length<len) st += " ";
+    return new RubyEngine.RubyObject.String(st);
+  },
   "to_i": function(self, args, block) {
     var v = parseInt(self.str);
     if (isNaN(v)) v=0;

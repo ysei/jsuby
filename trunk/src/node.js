@@ -31,6 +31,11 @@ RubyEngine.Node.Method.prototype.toSource = function(){
   var block = this.block?this.block.toSource():"";
   return this.type+"("+(this.target==null?"":this.target.toSource()+".")+this.name+","+(this.args?this.args.toSource():this.args)+")" + block;
 }
+RubyEngine.Node.Method.prototype.clone = function(){
+  var args=[];
+  for(var i=0;i<this.args.length;i++) args.push(this.args[i]);
+  return new RubyEngine.Node.Method(this.name,this.target,args);
+}
 
 RubyEngine.Node.Block = function(vars, block){
 	this.type = "B";

@@ -78,6 +78,13 @@ function testSubstituteBrackett() {
 	assertEquals("string[nth]= 3", ruby.exec(' a="abc"; n=2; a[n]="XYZ"; a '), "abXYZ");
 }
 
+function testCenter() {
+	assertEquals("center 1", ruby.exec(' "a".center(3) '), " a ");
+	assertEquals("center 2", ruby.exec(' "a".center(4) '), " a  ");
+	assertEquals("center 3", ruby.exec(' "aaaa".center(3) '), "aaaa");
+	assertEquals("center 4", ruby.exec(' "ruby".center(6) '), " ruby ");
+}
+
 </script>
 </head>
 </html>
