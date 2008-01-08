@@ -1,0 +1,90 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testLiteral() {
+	assertEquals("literal 1", ruby.exec(" '' "), "");
+	assertEquals("literal 2", ruby.exec(' "" '), "");
+	assertEquals("literal 3", ruby.exec(" 'abc' "), "abc");
+	assertEquals("literal 4", ruby.exec(' "xyz" '), "xyz");
+}
+
+function testStringExpansion() {
+	ruby.exec(' a=456; b="ruby" ')
+	assertEquals("expansion 1", ruby.exec('"#{123}"'), "123");
+	assertEquals("expansion 2", ruby.exec('"#{a}"'), "456");
+	assertEquals("expansion 3", ruby.exec('"#{"test"}"'), "test");
+	assertEquals("expansion 4", ruby.exec('"a=#{a}, b=#{b}"'), "a=456, b=ruby");
+	assertEquals("expansion 5", ruby.exec('"a*2=#{a*2}, b.reverse=#{b.reverse}"'), "a*2=912, b.reverse=ybur");
+}
+
+function testAdd() {
+	assertEquals("string add 1", ruby.exec(" 'a'+'b' "), "ab");
+	assertEquals("string add 2", ruby.exec(" 'd'+'e'+'f' "), "def");
+	assertEquals("string add 3", ruby.exec(" x='u'+'b'; \"r\"+x+\"y\" "), "ruby");
+	assertEquals("string add 4", ruby.exec(" x='ru'; y='b'; z='y'; x + y + z "), "ruby");
+}
+
+function testMul() {
+	assertEquals("string multiple 1", ruby.exec(" 'abc' * 0 "), "");
+	assertEquals("string multiple 2", ruby.exec(" 'abc' * 1 "), "abc");
+	assertEquals("string multiple 3", ruby.exec(" 'abc' * 3 "), "abcabcabc");
+}
+
+function testLength() {
+	assertEquals("length 1", ruby.exec(' "".length '), 0);
+	assertEquals("length 2", ruby.exec(' "abc".length '), 3);
+}
+
+function testReverse() {
+	assertEquals("reverse 1", ruby.exec(' "a".reverse '), "a");
+	assertEquals("reverse 2", ruby.exec(' "abc".reverse '), "cba");
+	assertEquals("reverse 3", ruby.exec(' "".reverse '), "");
+	assertEquals("reverse 4", ruby.exec(" x='ruby'; x.reverse "), "ybur");
+}
+
+function testTo_i() {
+	assertEquals("to_i 1", ruby.exec(' "".to_i '), 0);
+	assertEquals("to_i 2", ruby.exec(' "abc".to_i '), 0);
+	assertEquals("to_i 3", ruby.exec(' "0".to_i '), 0);
+	assertEquals("to_i 4", ruby.exec(' "123".to_i '), 123);
+	assertEquals("to_i 5", ruby.exec(' "-123".to_i '), -123);
+}
+
+function testBrackett() {
+	assertEquals("string[nth] 1", ruby.exec(' "ABC"[0] '), 65);
+	assertEquals("string[nth] 2", ruby.exec(' "ABC"[1] '), 66);
+	//assertEquals("string[nth] 3", ruby.exec(' "ABC"[-1] '), 67);
+	assertEquals("string[nth] 4", ruby.exec(' n=2; "ABC"[n] '), 67);
+}
+
+function testSubstituteBrackett() {
+	assertEquals("string[nth]= 1", ruby.exec(' a="abc"; a[1]=66; a '), "aBc");
+	assertEquals("string[nth]= 2", ruby.exec(' a="abc"; a[1]="XYZ"; a '), "aXYZc");
+	assertEquals("string[nth]= 3", ruby.exec(' a="abc"; n=2; a[n]="XYZ"; a '), "abXYZ");
+}
+
+function testCenter() {
+	assertEquals("center 1", ruby.exec(' "a".center(3) '), " a ");
+	assertEquals("center 2", ruby.exec(' "a".center(4) '), " a  ");
+	assertEquals("center 3", ruby.exec(' "aaaa".center(3) '), "aaaa");
+	assertEquals("center 4", ruby.exec(' "ruby".center(6) '), " ruby ");
+}
+
+</script>
+</head>
+</html>

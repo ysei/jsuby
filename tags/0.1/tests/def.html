@@ -1,0 +1,65 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script type="text/ruby">
+def test1(x)
+  x*x
+end
+def test2(y)
+  $test2 = y * 2
+end
+def test3(a, b, c)
+  (a + b) * c
+end
+def fib(n)
+  if n<2
+    n
+  else
+    fib(n-1)+fib(n-2)
+  end
+end
+</script>
+
+<script type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
+
+function testCalcurateMethod() {
+	assertEquals("cal 1", ruby.exec(" test1 3 "),  9);
+	assertEquals("cal 2", ruby.exec(" test1(4) "),  16);
+	assertEquals("cal 3", ruby.exec(" x=1; test1(5); x "),  1);
+}
+
+function testSetGlobalVariableMethod() {
+	assertEquals("global 1", ruby.exec(" test2 3; $test2 "),  6);
+}
+
+function testPluralArguments() {
+	assertEquals("plural 1", ruby.exec(" test3 1, 2, 3 "),  9);
+	assertEquals("plural 2", ruby.exec(" test3( 2, 3, 4 ) "),  20);
+}
+
+function testRecursion() {
+	assertEquals("fib 1", ruby.exec(" fib(0) "),  0);
+	assertEquals("fib 2", ruby.exec(" fib(1) "),  1);
+	assertEquals("fib 3", ruby.exec(" fib(5) "),  5);
+	assertEquals("fib 4", ruby.exec(" fib(10) "),  55);
+	assertEquals("fib 5", ruby.exec(" fib(15) "),  610);
+}
+
+
+</script>
+</head>
+</html>

@@ -1,0 +1,22 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script language="JavaScript" type="text/javascript" src="jsunit/app/jsUnitCore.js"></script>
+<script language="JavaScript" type="text/javascript">
+function suite() {
+  var newsuite = new top.jsUnitTestSuite();
+  newsuite.addTestPage('../tests/integer.html');
+  newsuite.addTestPage('../tests/string.html');
+  newsuite.addTestPage('../tests/array.html');
+  newsuite.addTestPage('../tests/variable.html');
+  newsuite.addTestPage('../tests/builtinFunction.html');
+  newsuite.addTestPage('../tests/if.html');
+  newsuite.addTestPage('../tests/range.html');
+  newsuite.addTestPage('../tests/jsobject.html');
+  newsuite.addTestPage('../tests/def.html');
+  newsuite.addTestPage('../tests/callfromjs.html');
+  return newsuite;
+}
+</script>
+</head>
+</html>
