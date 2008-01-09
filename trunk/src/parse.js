@@ -128,7 +128,7 @@ RubyEngine.Parser.prototype.arg = function() {
 }
 
 RubyEngine.Parser.prototype.blockvars = function() {
-	var ret=[];
+	var x, ret=[];
 	var prebody = this.body;
 	if (this.body.match(/^[ \t]*(\|)/)) {
 		this.body = RegExp.rightContext;

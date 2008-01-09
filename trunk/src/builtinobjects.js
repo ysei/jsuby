@@ -1,53 +1,52 @@
 //// RubyObject //////////////////////////////////////////////////////
 
 
-RubyEngine.RubyObject = {}
-RubyEngine.RubyObject.inherit = function(s, c) {
-  c.prototype = new s();
-  c.clz = {};
-  c.methods = {}
-  c.superclz = s;
-  return c;
-}
-RubyEngine.RubyObject.call = function(self, name, args, block){
-//console.log(self.toSource());console.trace();if(!confirm("continue?")) exit();
-  var clz = self.clz;
-  var method;
-  while( !(method=clz.methods[name]) ) if ( !(clz=clz.superclz) ) break;
-  if (method) {
-    return method.apply(this, [self, args, block]);
-  } else if (name!="method_missing") {
-    var newarg = [new RubyEngine.RubyObject.String(name)];
-    if (args && args.length > 0) newarg = newarg.concat(args);
-    var ret = RubyEngine.RubyObject.call.apply(this, [self, "method_missing", newarg, block]);
-    if (ret!=undefined) return ret;
-    return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.clz.toString(), name);
+RubyEngine.RubyObject = {
+  _LikeArray: {"[object Array]":true, "[object HTMLCollection]":true},
+  inherit: function(s, c) {
+    c.prototype = new s();
+    c.clz = {};
+    c.methods = {}
+    c.superclz = s;
+    return c;
+  },
+  call: function(self, name, args, block){
+    var clz = self.clz;
+    var method;
+    while( !(method=clz.methods[name]) ) if ( !(clz=clz.superclz) ) break;
+    if (method) {
+      return method.apply(this, [self, args, block]);
+    } else if (name!="method_missing") {
+      var newarg = [new RubyEngine.RubyObject.String(name)];
+      if (args && args.length > 0) newarg = newarg.concat(args);
+      var ret = RubyEngine.RubyObject.call.apply(this, [self, "method_missing", newarg, block]);
+      if (ret!=undefined) return ret;
+      return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.clz.toString(), name);
+    }
+    return undefined;
+  },
+  js2r: function(obj){
+    if (obj==undefined) return obj;
+    if (obj==null) return obj; // TODO:
+    var clzname = Object.prototype.toString.call(obj);
+    if (clzname == "[object String]") {                 // string
+      return new RubyEngine.RubyObject.String(obj);
+    } else if (clzname in RubyEngine.RubyObject._LikeArray){ // like array (including collection)
+      var ary = []
+      for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
+      var ret = new RubyEngine.RubyObject.Array();
+      ret.array = ary;
+      return ret;
+      return new RubyEngine.RubyObject.Array(ary);
+    } else if (clzname == "[object Number]") {          // number
+      return new RubyEngine.RubyObject.Numeric(obj);
+    } else if (clzname == "[object Boolean]") {         // TODO: boolean
+      return obj;
+    } else {                                            // others
+      return new RubyEngine.RubyObject.JSObject(obj);
+    }
   }
-  return undefined;
-};
-RubyEngine.RubyObject._LikeArray = {"[object Array]":true, "[object HTMLCollection]":true};
-RubyEngine.RubyObject.js2r = function(obj){
-  if (obj==undefined) return obj;
-  if (obj==null) return obj; // TODO:
-  var clzname = Object.prototype.toString.call(obj);
-  if (clzname == "[object String]") {                 // string
-    return new RubyEngine.RubyObject.String(obj);
-  } else if (clzname in RubyEngine.RubyObject._LikeArray){ // like array (including collection)
-    var ary = []
-    for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
-    var ret = new RubyEngine.RubyObject.Array();
-    ret.array = ary;
-    return ret;
-    return new RubyEngine.RubyObject.Array(ary);
-  } else if (clzname == "[object Number]") {          // number
-    return new RubyEngine.RubyObject.Numeric(obj);
-  } else if (clzname == "[object Boolean]") {         // TODO: boolean
-    return obj;
-  } else {                                            // others
-    return new RubyEngine.RubyObject.JSObject(obj);
-  }
 }
-
 
 RubyEngine.RubyObject.Object = function(){ this.clz = RubyEngine.RubyObject.Object; }
 RubyEngine.RubyObject.Object.prototype.toValue = function(){ return this; } // to Javascript value(instance)
@@ -67,17 +66,19 @@ RubyEngine.RubyObject.Numeric = RubyEngine.RubyObject.inherit(RubyEngine.RubyObj
   if (arguments.length>0) this.num = arguments[0];
 });
 //RubyEngine.RubyObject.Numeric.prototype.toValue = function(){ return this.num; }
-RubyEngine.RubyObject.Numeric.prototype.toString = function(){ return this.num.toString(); }
-RubyEngine.RubyObject.Numeric.prototype.toSource = function(){ return this.num.toString(); }
-RubyEngine.RubyObject.Numeric.prototype.neg = function(){ return new RubyEngine.RubyObject.Numeric(-this.num); }
-RubyEngine.RubyObject.Numeric.prototype.add = function(x){ return new RubyEngine.RubyObject.Numeric(this.num + x.num); }
-RubyEngine.RubyObject.Numeric.prototype.sub = function(x){ return new RubyEngine.RubyObject.Numeric(this.num - x.num); }
-RubyEngine.RubyObject.Numeric.prototype.mul = function(x){ return new RubyEngine.RubyObject.Numeric(this.num * x.num); }
-RubyEngine.RubyObject.Numeric.prototype.div = function(x){ return new RubyEngine.RubyObject.Numeric(parseInt(this.num / x.num)); }
-RubyEngine.RubyObject.Numeric.prototype.mod = function(x){ return new RubyEngine.RubyObject.Numeric(this.num % x.num); }
-RubyEngine.RubyObject.Numeric.prototype.pow = function(x){ return new RubyEngine.RubyObject.Numeric(Math.pow(this.num, x.num)); }
-RubyEngine.RubyObject.Numeric.prototype.eql = function(x){ return this.num == x.num; }
-RubyEngine.RubyObject.Numeric.prototype.cmp = function(x){ return (this.num==x.num?0:(this.num<x.num?-1:1)); }
+RubyEngine.RubyObject.Numeric.prototype = {
+  toString: function(){ return this.num.toString(); },
+  toSource: function(){ return this.num.toString(); },
+  neg: function(){ return new RubyEngine.RubyObject.Numeric(-this.num); },
+  add: function(x){ return new RubyEngine.RubyObject.Numeric(this.num + x.num); },
+  sub: function(x){ return new RubyEngine.RubyObject.Numeric(this.num - x.num); },
+  mul: function(x){ return new RubyEngine.RubyObject.Numeric(this.num * x.num); },
+  div: function(x){ return new RubyEngine.RubyObject.Numeric(parseInt(this.num / x.num)); },
+  mod: function(x){ return new RubyEngine.RubyObject.Numeric(this.num % x.num); },
+  pow: function(x){ return new RubyEngine.RubyObject.Numeric(Math.pow(this.num, x.num)); },
+  eql: function(x){ return this.num == x.num; },
+  cmp: function(x){ return (this.num==x.num?0:(this.num<x.num?-1:1)); }
+}
 RubyEngine.RubyObject.Numeric.methods = {
   "chr": function(self, args, block) {
     return new RubyEngine.RubyObject.String( String.fromCharCode(self.num) );
@@ -300,8 +301,8 @@ RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; 
 RubyEngine.RubyObject.JSObject.methods = {
   "new": function(self, args, block) {
     var jsargs = [];
-    if(args) for (var i=1;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
-    return RubyEngine.RubyObject.js2r(new self.obj());
+    if(args) for(var i=0;i<args.length;i++) jsargs.push("this.run(args["+i+"]).toValue()");
+    return RubyEngine.RubyObject.js2r(eval( "new self.obj("+jsargs.join(',')+")" ));
   },
   "method_missing": function(self, args, block) {
     var name = this.run(args[0]).str;
