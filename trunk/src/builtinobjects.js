@@ -2,7 +2,6 @@
 
 
 RubyEngine.RubyObject = {
-  _LikeArray: {"[object Array]":true, "[object HTMLCollection]":true},
   inherit: function(s, c) {
     c.prototype = new s();
     c.clz = {};
@@ -31,7 +30,7 @@ RubyEngine.RubyObject = {
     var clzname = Object.prototype.toString.call(obj);
     if (clzname == "[object String]") {                 // string
       return new RubyEngine.RubyObject.String(obj);
-    } else if (clzname in RubyEngine.RubyObject._LikeArray){ // like array (including collection)
+    } else if (clzname == "[object Array]"){            // array
       var ary = []
       for (var i=0;i<obj.length;i++) ary.push(RubyEngine.RubyObject.js2r(obj[i]));
       var ret = new RubyEngine.RubyObject.Array();
@@ -303,6 +302,9 @@ RubyEngine.RubyObject.JSObject.methods = {
     var jsargs = [];
     if(args) for(var i=0;i<args.length;i++) jsargs.push("this.run(args["+i+"]).toValue()");
     return RubyEngine.RubyObject.js2r(eval( "new self.obj("+jsargs.join(',')+")" ));
+  },
+  "[]": function(self, args, block) {
+    return RubyEngine.RubyObject.js2r(self.obj[this.run(args[0]).num]);
   },
   "method_missing": function(self, args, block) {
     var name = this.run(args[0]).str;

@@ -46,7 +46,9 @@ RubyEngine.Scope.prototype = {
     if (typeof(ref) == "function") {
       return ref.apply(this, [args, block]);
     } else if (RubyEngine.RubyObject.JSObject.prototype.isPrototypeOf(ref)) {
-      return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, args));
+      var jsargs = [];
+      for (var i=0;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
+      return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, jsargs));
     } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
       var block = ref;
       var newargs = {};
