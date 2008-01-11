@@ -47,7 +47,7 @@ RubyEngine.Scope.prototype = {
       return ref.apply(this, [args, block]);
     } else if (RubyEngine.RubyObject.JSObject.prototype.isPrototypeOf(ref)) {
       var jsargs = [];
-      for (var i=0;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
+      if(args) for (var i=0;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
       return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, jsargs));
     } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
       var block = ref;
@@ -193,8 +193,8 @@ RubyEngine.Interpreter.prototype = {
     for(var i=0;i<args.length;i++) newargs.push(RubyEngine.RubyObject.js2r(args[i]));
     return this.scope.call.apply(this, [name, newargs, null, true]).toValue();
   },
-  mapping: function(name){
-    this[name] = function(){return this.call(name, arguments);};
+  put: function(name, value){
+    this.scope.globalsubstitute(name, RubyEngine.RubyObject.js2r(value));
   },
 
   kernelMethod: function(node){

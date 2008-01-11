@@ -27,8 +27,6 @@ end
 
 var ruby = new RubyEngine.Interpreter();
 ruby.exec( RubyEngine.Util.getRubyScript() );
-ruby.mapping("test1");
-ruby.mapping("test2");
 
 function testDocument() {
 	assertEquals("document 1", ruby.exec("$document.getElementById('test').innerHTML"), "jsruby test");
