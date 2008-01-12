@@ -8,7 +8,7 @@ function $(id) { return document.getElementById(id) }
 String.prototype.toh = function(){ return this.replace(/</g, "&lt;").replace(/\n/g, "<br />"); }
 
 function cmdentry(evt) {
-	if (navigator.userAgent.indexOf("Firefox")<0) evt = event;
+	if (navigator.userAgent.indexOf("Gecko/")<0) evt = event;
 	if (evt.keyCode==13) {
     jsruby_exec($('jsruby_input').value)
 		$('jsruby_input').value = '';
@@ -72,7 +72,7 @@ if(s){
   y=pos[1];
 }
 if(code && code!="") {
-  code=code.replace(/\n?\r/,"\n");
+  code=code.replace(/\r?\n|\r/g,"\n");
   jsruby_exec(code);
   w.style.left=x+'px';
   w.style.top=y+'px';

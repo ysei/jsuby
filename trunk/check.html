@@ -30,7 +30,7 @@
 
 
 <script type="text/javascript">
-var FIREFOX = navigator.userAgent.indexOf("Firefox")>0;
+var FIREFOX = navigator.userAgent.indexOf("Gecko/")>-1;
 function $(id) { return document.getElementById(id) }
 var parser = new RubyEngine.Parser();
 var ruby = new RubyEngine.Interpreter();
