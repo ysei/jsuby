@@ -1,0 +1,54 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script type="text/ruby">
+def test1(x)
+  x 2
+end
+
+def test2(x)
+  x.new 2
+end
+
+</script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
+
+function testDocument() {
+	assertEquals("document 1", ruby.exec("$document.getElementById('test').innerHTML"), "jsruby test");
+	assertEquals("document 2", ruby.exec("$document.getElementsByTagName('div').length"), 3);
+}
+
+function testFunctionObject() {
+	assertEquals("function object 1", ruby.test1( function(x){ return x*2; } ), 4);
+	assertEquals("function object 2", ruby.test1( function(x){ return x*3+1; } ), 7);
+}
+
+function testNew() {
+	function Foo(x) { this.bar = x; }
+	var foo = ruby.test2(Foo);
+	assertEquals("new 1", foo.bar, 2);
+}
+
+</script>
+</head>
+<body>
+<div id="test">jsruby test</div>
+<div id="test2">jsruby TEST2</div>
+<div id="test3">jsruby test3</div>
+</body>
+</html>
