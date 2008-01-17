@@ -10,6 +10,11 @@ RubyEngine.Interpreter.KernelMethod = {
       this[name] = function(){return this.call(name, arguments);};
     }
   },
+  "*eval": function(args) {
+    var src = this.run(args[0]).str;
+    var nodes=(new RubyEngine.Parser()).parse(src);
+    return this.run(nodes);
+  },
   "puts": function(args) {
     if (args && args.length > 0) {
       for(var jdx=0;jdx<args.length;jdx++) {

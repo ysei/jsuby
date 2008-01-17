@@ -306,6 +306,18 @@ RubyEngine.RubyObject.JSObject.methods = {
   "[]": function(self, args, block) {
     return RubyEngine.RubyObject.js2r(self.obj[this.run(args[0]).num]);
   },
+  "each": function(self, args, block) {
+    if (!block) return null;
+    var varname;
+    if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
+    this.scope.pushLevel();
+    for(var i=0;i<self.obj.length;i++) {
+    	if (varname) this.scope.substitute(varname, RubyEngine.RubyObject.js2r(self.obj[i]));
+    	this.run(block.block);
+    }
+    this.scope.popLevel();
+    return self;
+  },
   "method_missing": function(self, args, block) {
     var name = this.run(args[0]).str;
     if (args.length==1) {

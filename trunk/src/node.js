@@ -24,6 +24,7 @@ RubyEngine.Node.Method = function(name, target, args){
 	this.type = "M";
 	this.name = name;
 	this.target = target;
+	if(name=="eval" && target==null) this.name = "*eval"; // for Object#eval
 	this.args = args;
 	this.block = undefined;
 }
