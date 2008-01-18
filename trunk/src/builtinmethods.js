@@ -12,7 +12,7 @@ RubyEngine.Interpreter.KernelMethod = {
   },
   "*eval": function(args) {
     var src = this.run(args[0]).str;
-    var nodes=(new RubyEngine.Parser()).parse(src);
+    var nodes = this.parser.parse(src);
     return this.run(nodes);
   },
   "puts": function(args) {
