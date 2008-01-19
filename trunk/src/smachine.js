@@ -35,9 +35,6 @@ RubyEngine.SMachine = function(){
   }
 
   RubyEngine.RubyObject.Numeric.methods.upto = function(self, args, block) {
-console.log("self:", self.toSource());
-console.log("args:", args.toSource());
-console.dir(block);
     if (!block) return null;
     var b = new RubyEngine.SMachine.BlockIterator(block, function(b){
       if(b.now<=b.to) {
@@ -166,7 +163,7 @@ RubyEngine.SMachine.KernelMethods = {
     } else {
       this.writeStdout("\n");
     }
-  },
+  }
 }
 
 RubyEngine.SMachine.prototype = {
@@ -176,7 +173,6 @@ RubyEngine.SMachine.prototype = {
     if (typeof(node)=="string") node = this.parser.parse(node);
     this.compile(node);
     this.loop();
-console.dir(this.stack);
 
     //var ret;
     //while(this.command.length>0) ret = this.loop();
@@ -186,7 +182,11 @@ console.dir(this.stack);
 
   compile: function(x) {
 		if (Array.prototype.isPrototypeOf(x)) {
-			this.command.push( new RubyEngine.SMachine.Iterator(x) );
+      if (x.length==1) {
+        this.command.push( this.compile(x[0]) );
+      } else {
+  			this.command.push( new RubyEngine.SMachine.Iterator(x) );
+			}
 		} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(x)) {
     	var list = x.list;
     	for (var i=list.length-1;i>=0;i--) this.compile(list[i]);
