@@ -319,10 +319,11 @@ RubyEngine.RubyObject.JSObject.methods = {
     return self;
   },
   "method_missing": function(self, args, block) {
+alert(args.toSource());
     var name = this.run(args[0]).str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
-    } else if (name[name.length-1] == "=") {
+    } else if (name.charAt(name.length-1) == "=") {
       var v=this.run(args[1])
       self.obj[name.slice(0, name.length-1)] = v.toValue();
       return v;

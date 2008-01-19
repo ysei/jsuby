@@ -14,7 +14,7 @@ RubyEngine.SMachine = function(){
     var name = args[0].str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
-    } else if (name[name.length-1] == "=") {
+    } else if (name.charAt(name.length-1) == "=") {
       self.obj[name.slice(0, name.length-1)] = args[1].toValue();
       return args[1];
     } else {
