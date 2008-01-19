@@ -20,8 +20,12 @@
 
 
 <textarea id='script_area' rows='8' cols='70'>
-(1..10).each{|x| puts if x % 2 == 0 then "even" else "odd" end }
+1.upto(10000) do |x|
+  $document.getElementById('console_area').innerHTML = x
+  sleep 100
+end
 </textarea>
+<input type='button' value='step' onclick='javascript:step();' />
 <input type='button' value='parse & execute' onclick='javascript:execute();' /><br />
 &darr; parse
 <div style='border:1px solid black;' id='nodetree_area'>(parsing...)</div>
@@ -37,6 +41,18 @@ var parser = new RubyEngine.Parser();
 var ruby = new RubyEngine.SMachine();
 ruby.writeStdout = function(st){alert(st);}
 
+function step() {
+	if (ruby.command.length==0) {
+		var text = $("script_area").value.replace(/^\n+/, "").replace(/([^\n])$/, "$&\n")
+		var nodetree = parser.parse(text);
+		var div = $("nodetree_area")
+		if(FIREFOX){div.textContent = nodetree.toSource();}else{div.innerText = nodetree.toSource();}
+    ruby.compile(nodetree);
+  }
+	ruby.loop(false);
+	console.dir(ruby.command);
+	console.dir(ruby.stack);
+}
 function execute() {
 	$("console_area").innerHTML = '';
 
@@ -46,7 +62,7 @@ function execute() {
 	if(FIREFOX){div.textContent = nodetree.toSource();}else{div.innerText = nodetree.toSource();}
 
 	ruby.exec(text);
-	$("console_area").innerHTML = ruby.stdout.replace(/\n/g,"<br />")
+	//$("console_area").innerHTML = ruby.stdout.replace(/\n/g,"<br />")
 }
 </script>
 

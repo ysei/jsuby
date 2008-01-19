@@ -8,6 +8,65 @@ RubyEngine.SMachine = function(){
 
 	this.command = [];
 	this.stack = [];
+
+  // patch
+  RubyEngine.RubyObject.JSObject.methods.method_missing = function(self, args, block) {
+    var name = args[0].str;
+    if (args.length==1) {
+      return RubyEngine.RubyObject.js2r(self.obj[name]);
+    } else if (name[name.length-1] == "=") {
+      self.obj[name.slice(0, name.length-1)] = args[1].toValue();
+      return args[1];
+    } else {
+      if (name in self.obj) {
+        if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera
+          var jsargs = [];
+          for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
+          return RubyEngine.RubyObject.js2r(self.obj[name].apply(self.obj, jsargs));
+        } else { // others
+          var jsargs = [];
+          for (var i=1;i<args.length;i++) jsargs.push( "args["+i+"].toValue()" );
+          return RubyEngine.RubyObject.js2r( eval( "self.obj[name]("+jsargs.join(',')+")" ));
+        }
+      } else {
+        return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.obj.toString(), name);
+      }
+    }
+  }
+
+  RubyEngine.RubyObject.Numeric.methods.upto = function(self, args, block) {
+console.log("self:", self.toSource());
+console.log("args:", args.toSource());
+console.dir(block);
+    if (!block) return null;
+    var b = new RubyEngine.SMachine.BlockIterator(block, function(b){
+      if(b.now<=b.to) {
+        if(b.varname) this.scope.substitute(b.varname, new RubyEngine.RubyObject.Numeric(b.now));
+        b.now++;
+        return b;
+      }
+    });
+    b.to=args[0].num;
+    b.now=self.num;
+    if (block.vars) b.varname = block.vars[0].name;
+    this.command.push(b);
+  }
+}
+
+RubyEngine.SMachine.BlockIterator = function(block, iterator) {
+  this.block = block;
+  this.iterator = iterator;
+  if (block.vars) varname = block.vars[0].name;
+}
+RubyEngine.SMachine.BlockIterator.prototype = {
+  "next": function(self){
+    this.scope.pushLevel();
+    if(self.iterator.apply(this, [self])) {
+      this.command.push(self);
+      this.command.push("popLevel");
+      this.command.push(this.compile(self.block.block));
+    }
+  }
 }
 
 RubyEngine.SMachine.Scope = function(){ this.clear(); }
@@ -93,6 +152,12 @@ RubyEngine.SMachine.Iterator.prototype = {
 }
 
 RubyEngine.SMachine.KernelMethods = {
+  "*let": function(args) {
+    return this.scope.substitute(args[0].name, args[1]);
+  },
+  "sleep": function(args) {
+    this.sleep = args[0];
+  },
   "puts": function(args) {
     if (args && args.length > 0) {
       for(var jdx=0;jdx<args.length;jdx++) {
@@ -110,8 +175,8 @@ RubyEngine.SMachine.prototype = {
   exec: function(node){
     if (typeof(node)=="string") node = this.parser.parse(node);
     this.compile(node);
-    var r=this;
     this.loop();
+console.dir(this.stack);
 
     //var ret;
     //while(this.command.length>0) ret = this.loop();
@@ -126,10 +191,11 @@ RubyEngine.SMachine.prototype = {
     	var list = x.list;
     	for (var i=list.length-1;i>=0;i--) this.compile(list[i]);
 		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
-			if(x.block) this.command.push(x.block);
-    	var list = x.args;
     	this.command.push(x);
-    	for (var i=list.length-1;i>=0;i--) this.compile(list[i]);
+      if(x.target) this.compile(x.target);
+    	var list = x.args;
+    	//for (var i=list.length-1;i>=0;i--) this.compile(list[i]);
+    	for (var i=0;i<list.length;i++) this.compile(list[i]);
 			this.command.push( "end of arguments" );
 		} else {
 			this.command.push( x );
@@ -137,17 +203,35 @@ RubyEngine.SMachine.prototype = {
   },
 
   loop: function(){
+    this.sleep=0;
     var stk=this.stack;
     var x=this.command.pop(), y;
 		if (RubyEngine.SMachine.Iterator.prototype.isPrototypeOf(x)) {
       if ((y=x.next())!=undefined) {
+        this.stack.pop();  // anxious...
         this.command.push( x );
         this.compile(y);
       }
 		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
+      var obj;
+      if (x.target) obj=stk.pop();
       var args=[], y;
       while((y=stk.pop())!="end of arguments") args.push(y);
-      RubyEngine.SMachine.KernelMethods[x.name].apply(this, [args]);
+      if (obj) {
+        var methods = obj.clz.methods;
+        if (x.name in methods) {
+          stk.push(obj.clz.methods[x.name].apply(this, [obj, args, x.block]));
+        } else {
+          args.unshift(new RubyEngine.RubyObject.String(x.name));
+          stk.push(obj.clz.methods["method_missing"].apply(this, [obj, args, x.block]));
+        }
+      } else {
+        stk.push(RubyEngine.SMachine.KernelMethods[x.name].apply(this, [args]));
+      }
+		} else if (RubyEngine.SMachine.BlockIterator.prototype.isPrototypeOf(x)) {
+      x.next.apply(this, [x]);
+		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
+      stk.push(this.scope.reference(x.name));
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {
 			case "-@":
@@ -203,91 +287,20 @@ RubyEngine.SMachine.prototype = {
 				stk.push(stk.pop().sft(a));
 				break;
 			}
+		} else if(x=="pushLevel") {
+      this.scope.pushLevel();
+		} else if(x=="popLevel") {
+      this.scope.popLevel();
 		} else {
 			stk.push(x);
 		}
 
-    console.log(this.command.length);
-    if(this.command.length>0){
+    //console.log(this.command.length);
+    if(arguments.length==0 && this.command.length>0){
       var r=this;
-      setTimeout(function(){r.loop.apply(r);}, 0);
+      setTimeout(function(){r.loop.apply(r);}, r.sleep);
     }
-  },
-  calcExpr: function(node){
-  	var calclist = node.list;
-  	var stk = [];
-  	for (var idx=0;idx<calclist.length;idx++) {
-  		var x = calclist[idx];
-  		if (Array.prototype.isPrototypeOf(x)) {
-  			stk.push( this.run(x) );
-  		} else if (RubyEngine.Node.Expression.prototype.isPrototypeOf(x)) {
-  			stk.push( this.calcExpr(x) );
-  		} else if (RubyEngine.Node.Variable.prototype.isPrototypeOf(x)) {
-  			stk.push( this.scope.reference(x.name) );
-  		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
-  			stk.push( this.run(x) );
-  		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
-  			stk.push( this.run(x) );
-  		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
-  			switch (x.name) {
-  			case "-@":
-  				stk.push(stk.pop().neg());
-  				break;
-  			case "+":
-  				var a = stk.pop();
-  				stk.push(stk.pop().add(a));
-  				break;
-  			case "-":
-  				var a = stk.pop();
-  				stk.push(stk.pop().sub(a));
-  				break;
-  			case "*":
-  				var a = stk.pop();
-  				stk.push(stk.pop().mul(a));
-  				break;
-  			case "/":
-  				var a = stk.pop();
-  				stk.push(stk.pop().div(a));
-  				break;
-  			case "%":
-  				var a = stk.pop();
-  				stk.push(stk.pop().mod(a));
-  				break;
-  			case "**":
-  				var a = stk.pop();
-  				stk.push(stk.pop().pow(a));
-  				break;
-  			case "..":
-  				var to = stk.pop();
-  				var from = stk.pop();
-          stk.push(new RubyEngine.RubyObject.Range(from.num, to.num));
-  				break;
-  			case "==":
-  				var a = stk.pop();
-  				stk.push(stk.pop().eql(a));
-  				break;
-  			case "<":
-  				var a = stk.pop();
-  				stk.push(stk.pop().cmp(a)<0);
-  				break;
-  			case ">":
-  				var a = stk.pop();
-  				stk.push(stk.pop().cmp(a)>0);
-  				break;
-  			case ">=":
-  				var a = stk.pop();
-  				stk.push(stk.pop().cmp(a)>=0);
-  				break;
-  			case "<<":
-  				var a = stk.pop();
-  				stk.push(stk.pop().sft(a));
-  				break;
-  			}
-  		} else {
-  			stk.push(x);
-  		}
-  	}
-  	return stk.pop();
+
   },
 
   call: function(name, args){
