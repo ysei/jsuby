@@ -319,7 +319,6 @@ RubyEngine.RubyObject.JSObject.methods = {
     return self;
   },
   "method_missing": function(self, args, block) {
-alert(args.toSource());
     var name = this.run(args[0]).str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
