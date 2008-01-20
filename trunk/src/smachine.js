@@ -7,7 +7,7 @@ RubyEngine.SMachine = function(){
 	this.parser = new RubyEngine.Parser();
 
 	this.command = [];
-	this.stack = [];
+	this.stack = [null];
 
   // patch
   RubyEngine.RubyObject.JSObject.methods.method_missing = function(self, args, block) {
@@ -47,6 +47,7 @@ RubyEngine.SMachine = function(){
     b.now=self.num;
     if (block.vars) b.varname = block.vars[0].name;
     this.command.push(b);
+    return self;
   }
 }
 
@@ -61,7 +62,7 @@ RubyEngine.SMachine.BlockIterator.prototype = {
     if(self.iterator.apply(this, [self])) {
       this.command.push(self);
       this.command.push("popLevel");
-      this.command.push(this.compile(self.block.block));
+      this.compile(self.block.block);
     }
   }
 }
@@ -183,7 +184,8 @@ RubyEngine.SMachine.prototype = {
   compile: function(x) {
 		if (Array.prototype.isPrototypeOf(x)) {
       if (x.length==1) {
-        this.command.push( this.compile(x[0]) );
+        this.stack.pop();  // anxious...
+        this.compile(x[0]);
       } else {
   			this.command.push( new RubyEngine.SMachine.Iterator(x) );
 			}
