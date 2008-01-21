@@ -1,0 +1,46 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script type="text/ruby">
+def fib(n)
+  if n<2
+    n
+  else
+    fib(n-1)+fib(n-2)
+  end
+end
+def test1(jsobj, a, b)
+  jsobj.bar a, b
+end
+
+</script>
+
+<script type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
+
+function testCallFromJS() {
+	assertEquals("call from js 1", ruby.call("fib", [8]),  21);
+	
+	var Foo = function(){}
+	Foo.prototype.bar = function(a, b){ return a*b+1; }
+	var foo = new Foo();
+	assertEquals("call from js 2", ruby.call("test1", [foo, 3, 4]),  13);
+	
+}
+
+</script>
+</head>
+</html>

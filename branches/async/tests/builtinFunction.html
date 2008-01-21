@@ -1,0 +1,42 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function _test_stdout(expression, expected) {
+	ruby.stdout = "";
+	ruby.exec(expression);
+	assertEquals(expression, ruby.stdout, expected);
+}
+
+function testPuts() {
+    _test_stdout("puts", "\n");
+    _test_stdout("puts 999", "999\n");
+    _test_stdout('puts "abc"', "abc\n");
+    _test_stdout('puts "abc", 999', "abc\n999\n");
+}
+
+function testP() {
+    _test_stdout('p', '');
+    _test_stdout('p 3', "3\n");
+    _test_stdout('p "123"', "\"123\"\n");
+    _test_stdout('p 123,456', "123\n456\n");
+}
+
+
+</script>
+</head>
+</html>

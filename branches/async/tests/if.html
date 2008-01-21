@@ -1,0 +1,62 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script type="text/ruby">
+def modifier(n)
+	x = 0
+	x = n + 1 if n > 10
+	x
+end
+</script>
+
+<script type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+ruby.exec( RubyEngine.Util.getRubyScript() );
+
+function testIf() {
+	//assertEquals("if 1", ruby.exec("if false then 99 end"), null);
+	//assertEquals("if 2", ruby.exec("if nil then 99 end"), null);
+	//assertEquals("if 3", ruby.exec("if true then 99 end"), 99);
+	assertEquals("if 4", ruby.exec("if 1 then 99 end"), 99);
+	assertEquals("if 5", ruby.exec("if 0 then 99 end"), 99); // 0 is true in ruby
+	assertEquals("if 6", ruby.exec("if \"abc\" then 99 end"), 99);
+	assertEquals("if 7", ruby.exec("if 'abc' then 99 end"), 99);
+	assertEquals("if 8", ruby.exec("if '' then 99 end"), 99);
+}
+
+function testIfElse() {
+	assertEquals("ifelse 1", ruby.exec("x=1; if x==1 then 'true' else 'false' end"), "true");
+	assertEquals("ifelse 2", ruby.exec("x=0; if x==1 then 'true' else 'false' end"), "false");
+	assertEquals("ifelse 3", ruby.exec("x=1; if x==0 then 'true' else 'false' end"), "false");
+	assertEquals("ifelse 4", ruby.exec("x=0; if x==0 then 'true' else 'false' end"), "true");
+	assertEquals("ifelse 5", ruby.exec("x='a'; if x=='a' then 'true' else 'false' end"), "true");
+	assertEquals("ifelse 6", ruby.exec("x='b'; if x=='a' then 'true' else 'false' end"), "false");
+}
+
+function testElsif() {
+	var st = "if x==1 then 'value1' elsif x==2 then 'value2' else 'other' end";
+	assertEquals("elsif 1", ruby.exec("x=1;" + st), "value1");
+	assertEquals("elsif 2", ruby.exec("x=2;" + st), "value2");
+	assertEquals("elsif 3", ruby.exec("x=3;" + st), "other");
+}
+
+function testIfModifier() {
+	assertEquals("if modifier 1", ruby.exec("modifier 1"), 0);
+	assertEquals("if modifier 2", ruby.exec("modifier 20"), 21);
+}
+
+</script>
+</head>
+</html>

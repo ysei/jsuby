@@ -1,0 +1,81 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<script language="JavaScript" type="text/javascript" src="../jsunit/app/jsUnitCore.js"></script>
+
+<script type="text/javascript" src="../src/head.js"></script>
+<script type="text/javascript" src="../src/node.js"></script>
+<script type="text/javascript" src="../src/builtinobjects.js"></script>
+<script type="text/javascript" src="../src/parse.js"></script>
+<script type="text/javascript" src="../src/interpreter.js"></script>
+<script type="text/javascript" src="../src/builtinmethods.js"></script>
+<script type="text/javascript" src="../src/util.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+
+var ruby = new RubyEngine.Interpreter();
+
+function testArrayLiteral() {
+	assertArrayEquals("array literal 1", ruby.exec(" [] "), []);
+	assertArrayEquals("array literal 2", ruby.exec(" [1] "), [1]);
+	assertArrayEquals("array literal 3", ruby.exec(" [1, 2, 3] "), [1, 2, 3]);
+	assertArrayEquals("array literal 4", ruby.exec(" [[1, 2], [3, 4]] "), [[1, 2], [3, 4]]);
+	assertArrayEquals("array literal 5", ruby.exec(" [1, '2', 3] "), [1, '2', 3]);
+}
+
+function testArrayNew() {
+	assertArrayEquals("array new 1", ruby.exec(" Array.new() "), []);
+	assertArrayEquals("array new 2", ruby.exec(" Array.new(1) "), [1]);
+	assertArrayEquals("array new 3", ruby.exec(" Array.new(1, 2, 3) "), [1, 2, 3]);
+	assertArrayEquals("array new 4", ruby.exec(" Array.new([1, 2], Array.new(3, 4)) "), [[1, 2], [3, 4]]);
+	assertArrayEquals("array new 5", ruby.exec(" Array.new(1, '2', 3) "), [1, '2', 3]);
+}
+
+function testBrackett() {
+	ruby.exec(' a=["x", "y", "z"] ')
+	assertEquals("array[nth] 1", ruby.exec(' a[0] '), "x");
+	assertEquals("array[nth] 2", ruby.exec(' a[1] '), "y");
+	//assertEquals("array[nth] 3", ruby.exec(' a[-1] '), "z");  // TODO:
+	assertEquals("array[nth] 4", ruby.exec(' n=2; a[n] '), "z");
+
+	ruby.exec(' a=[[1, 2], [3, 4]] ')
+	assertEquals("array[nth] 4", ruby.exec(' a[1][0] '), 3);
+}
+
+function testSubstituteBrackett() {
+	ruby.exec(' a=["x", "y", "z"] ')
+	assertArrayEquals("array[nth]= 1", ruby.exec(' a[1] = "ruby"; a '), ["x", "ruby", "z"]);
+	assertArrayEquals("array[nth]= 2", ruby.exec(' n=2; a[n] = "foo"; a '), ["x", "ruby", "foo"]);
+	ruby.exec(' a=[[1, 2], [3, 4]] ')
+	assertArrayEquals("array[nth]= 3", ruby.exec(' a[0][1] = 9; a '), [[1, 9], [3, 4]]);
+}
+
+function testJoin() {
+	ruby.exec(' a=["x", "y", "z", 3] ')
+	assertEquals("join 1", ruby.exec(' a.join '), "xyz3");
+	assertEquals("join 2", ruby.exec(' a.join(",") '), "x,y,z,3");
+	//assertEquals("join 3", ruby.exec(' [1, 2, [3, 4]].join(",") '), "1,2,3,4"); // TODO:
+}
+
+function testInject() {
+	assertEquals("inject 1", ruby.exec(' [3,1,4,1,5,9].inject{|a,b| a+b} '), 23);
+}
+
+function testPush() {
+	ruby.exec(" a=[] ");
+	assertArrayEquals("push 1", ruby.exec(' a.push("r") '), ["r"]);
+	assertArrayEquals("push 2", ruby.exec(' a.push("u").push("b") '), ["r", "u", "b"]);
+	assertArrayEquals("push 3", ruby.exec(' a.push("y", "r", "u") '), ["r", "u", "b", "y", "r", "u"]);
+	assertArrayEquals("push 4", ruby.exec(' a << "b" << "y" '), ["r", "u", "b", "y", "r", "u", "b", "y"]);
+}
+
+function testMember() {
+	assertTrue("member? 1", ruby.exec(' [1,2,3,4].member?(1) '));
+	assertTrue("member? 2", ruby.exec(' [1,2,3,4].member?(2*2) '));
+	assertFalse("member? 3", ruby.exec(' [1,2,3,4].member?(5) '));
+}
+
+</script>
+</head>
+</html>
