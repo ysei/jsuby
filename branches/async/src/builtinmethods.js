@@ -11,39 +11,40 @@ RubyEngine.Interpreter.KernelMethod = {
     }
   },
   "*eval": function(args) {
-    var src = this.run(args[0]).str;
+    var src = args[0].str;
     var nodes = this.parser.parse(src);
     return this.run(nodes);
   },
   "puts": function(args) {
     if (args && args.length > 0) {
-      for(var jdx=0;jdx<args.length;jdx++) {
-        this.writeStdout(this.run(args[jdx]) + "\n");
-      }
+      for(var jdx=0;jdx<args.length;jdx++) this.writeStdout(args[jdx] + "\n");
     } else {
       this.writeStdout("\n");
     }
   },
   "if": function(args) {
     for(var idx=0;idx<args.length;idx+=2) {
-      var cond = this.run(args[idx]);
+      var cond = args[idx];
       if (cond || cond===0 || cond==="") return this.run(args[idx+1]);
     }
   },
   "*let": function(args) {
-    return this.scope.substitute(args[0].name, this.run(args[1]));
+    return this.scope.substitute(args[0].name, args[1]);
   },
   "*concat": function(args) {
     var st="";
     if (args && args.length > 0) {
-      for(var i=0;i<args.length;i++) st+=this.run(args[i]).toString();
+      for(var i=0;i<args.length;i++) st+=args[i].toString();
     }
     return new RubyEngine.RubyObject.String(st);
+  },
+  "sleep": function(args) {
+    this.sleep = args[0];
   },
   "p": function(args) {
     if (args && args.length > 0) {
       for (var i=0; i<args.length; i++) {
-        this.writeStdout(this.run(args[i]).toSource() + "\n");
+        this.writeStdout(args[i].toSource() + "\n");
       }
     }
   }

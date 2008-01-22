@@ -86,15 +86,18 @@ RubyEngine.RubyObject.Numeric.methods = {
     return new RubyEngine.RubyObject.String( String(self.num) );
   },
   "upto": function(self, args, block) {
-    if (!block) return null;
-    var varname, to=this.run(args[0]).num;
-    if (block.vars) varname = block.vars[0].name;
-    this.scope.pushLevel();
-    for(var i=self.num; i<=to; i++) {
-    	if (varname) this.scope.substitute(varname, new RubyEngine.RubyObject.Numeric(i));
-    	this.run(block.block);
-    }
-    this.scope.popLevel();
+    if (!block) return null;  // TODO: error
+    var b = new RubyEngine.Node.BlockIterator(block, function(b){
+      if(b.now<=b.to) {
+        if(b.varname) this.scope.substitute(b.varname, new RubyEngine.RubyObject.Numeric(b.now));
+        b.now++;
+        return b;
+      }
+    });
+    b.to=args[0].num;
+    b.now=self.num;
+    if (block.vars) b.varname = block.vars[0].name;
+    this.command.push(b);
     return self;
   }
 };
@@ -319,29 +322,28 @@ RubyEngine.RubyObject.JSObject.methods = {
     return self;
   },
   "method_missing": function(self, args, block) {
-    var name = this.run(args[0]).str;
+    var name = args[0].str;
     if (args.length==1) {
       return RubyEngine.RubyObject.js2r(self.obj[name]);
     } else if (name.charAt(name.length-1) == "=") {
-      var v=this.run(args[1])
-      self.obj[name.slice(0, name.length-1)] = v.toValue();
-      return v;
+      self.obj[name.slice(0, name.length-1)] = args[1].toValue();
+      return args[1];
     } else {
       if (name in self.obj) {
         if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera
           var jsargs = [];
-          for (var i=1;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
+          for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
           return RubyEngine.RubyObject.js2r(self.obj[name].apply(self.obj, jsargs));
         } else { // others
           var jsargs = [];
-          for (var i=1;i<args.length;i++) jsargs.push( "this.run(args["+i+"]).toValue()" );
+          for (var i=1;i<args.length;i++) jsargs.push( "args["+i+"].toValue()" );
           return RubyEngine.RubyObject.js2r( eval( "self.obj[name]("+jsargs.join(',')+")" ));
         }
       } else {
         return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.obj.toString(), name);
       }
     }
- }
+  }
 }
 
 

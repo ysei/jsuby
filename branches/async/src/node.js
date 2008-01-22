@@ -71,3 +71,34 @@ RubyEngine.Node.Expression = function(list){
 RubyEngine.Node.Expression.prototype.toSource = function(){return this.type+"'"+this.list.toSource()+"'"}
 
 
+RubyEngine.Node.BlockIterator = function(block, iterator) {
+  this.block = block;
+  this.iterator = iterator;
+  if (block.vars) varname = block.vars[0].name;
+}
+RubyEngine.Node.BlockIterator.prototype = {
+  "next": function(self){
+    this.scope.pushLevel();
+    if(self.iterator.apply(this, [self])) {
+      this.command.push(self);
+      this.command.push("popLevel");
+      this.compile(self.block.block);
+    }
+  }
+}
+
+RubyEngine.Node.Iterator = function(list) {
+    this.list = list;
+    this.idx = 0;
+  },
+RubyEngine.Node.Iterator.prototype = {
+  next: function() {
+    if (this.idx<this.list.length) {
+      return this.list[this.idx++];
+    } else {
+      return undefined;
+    }
+  }
+}
+
+
