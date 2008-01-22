@@ -129,7 +129,7 @@ RubyEngine.RubyObject.String.methods = {
     return new RubyEngine.RubyObject.String(st);
   },
   "center": function(self, args, block) {
-    var len=this.run(args[0]).num;
+    var len=args[0].num;
     var st = "";
     for(var i=(len-self.str.length-1)/2;i>0;i--) st += " ";
     st += self.str;
@@ -142,15 +142,15 @@ RubyEngine.RubyObject.String.methods = {
     return new RubyEngine.RubyObject.Numeric(v);
   },
   "[]": function(self, args, block) {
-    return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(this.run(args[0]).num));
+    return new RubyEngine.RubyObject.Numeric(self.str.charCodeAt(args[0].num));
   },
   "[]=": function(self, args, block) {
-    var x = this.run(args[0]).num;
+    var x = args[0].num;
     if (RubyEngine.RubyObject.Numeric.prototype.isPrototypeOf(args[1])) {
       self.str = self.str.substr(0,x) + String.fromCharCode(args[1].num) + self.str.substr(x+1);
       return args[1];
     } else {
-      self.str = self.str.substr(0,x) + this.run(args[1]).toString() + self.str.substr(x+1);
+      self.str = self.str.substr(0,x) + args[1].toString() + self.str.substr(x+1);
       return args[1];
     }
   }
@@ -191,29 +191,29 @@ RubyEngine.RubyObject.Array.clz.methods = {
   "new": function(self, args, block) {
     var obj = new RubyEngine.RubyObject.Array();
     var ary = [];
-    if (args) for(var i=0;i<args.length;i++) ary.push(this.run(args[i]));
+    if (args) for(var i=0;i<args.length;i++) ary.push(args[i]);
     obj.array = ary;
     return obj;
   }
 }
 RubyEngine.RubyObject.Array.methods = {
   "[]": function(self, args, block) {
-    return self.array[this.run(args[0]).num];
+    return self.array[args[0].num];
   },
   "push": function(self, args, block) {
     if(args){
-      for(var i=0;i<args.length;i++) self.array.push(this.run(args[i]));
+      for(var i=0;i<args.length;i++) self.array.push(args[i]);
     }
     return self;
   },
   "[]=": function(self, args, block) {
-    return self.array[this.run(args[0]).num] = this.run(args[1]);
+    return self.array[args[0]] = args[1];
   },
   "length": function(self, args, block) {
     return new RubyEngine.RubyObject.Numeric(self.array.length);
   },
   "member?": function(self, args, block) {
-    var x=this.run(args[0]);
+    var x=args[0];
     for(var i=0;i<self.array.length;i++) {
       if (x.eql(self.array[i])) return true;
     }
@@ -240,7 +240,7 @@ RubyEngine.RubyObject.Array.methods = {
     if (!block) return null;
     var i=0,r;
     if(args && args.length>0){
-      r=this.run(args[0]);
+      r=args[0];
     } else {
       r=self.array[i++];
     }
@@ -257,7 +257,7 @@ RubyEngine.RubyObject.Array.methods = {
     return r;
   },
   "join": function(self, args, block) {
-    var st = "", sep = (args&&args.length>0?this.run(args[0]).str:""); // TODO: $,
+    var st = "", sep = (args&&args.length>0?args[0].str:""); // TODO: $,
     for(var i=0;i<self.array.length;i++) {
       if(i>0) st+=sep;
       st+=self.array[i].toString();
@@ -303,11 +303,11 @@ RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; 
 RubyEngine.RubyObject.JSObject.methods = {
   "new": function(self, args, block) {
     var jsargs = [];
-    if(args) for(var i=0;i<args.length;i++) jsargs.push("this.run(args["+i+"]).toValue()");
+    if(args) for(var i=0;i<args.length;i++) jsargs.push("args["+i+"].toValue()");
     return RubyEngine.RubyObject.js2r(eval( "new self.obj("+jsargs.join(',')+")" ));
   },
   "[]": function(self, args, block) {
-    return RubyEngine.RubyObject.js2r(self.obj[this.run(args[0]).num]);
+    return RubyEngine.RubyObject.js2r(self.obj[args[0].num]);
   },
   "each": function(self, args, block) {
     if (!block) return null;

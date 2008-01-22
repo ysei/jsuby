@@ -80,6 +80,7 @@ RubyEngine.Interpreter.prototype = {
   writeStdout: function(st){this.stdout += st;},
 
   exec: function(node){
+    this.command=[];this.stack=[];
     if (typeof(node)=="string") node = this.parser.parse(node);
     this.compile(node);
     while(this.command.length>0) this.loop(false);
@@ -109,7 +110,7 @@ RubyEngine.Interpreter.prototype = {
     	this.command.push(x);
       if(x.target) this.compile(x.target);
     	var list = x.args;
-    	for (var i=0;i<list.length;i++) this.compile(list[i]);
+    	if(list) for (var i=0;i<list.length;i++) this.compile(list[i]);
 			this.command.push( "end of arguments" );
 		} else {
 			this.command.push( x );
@@ -130,7 +131,10 @@ RubyEngine.Interpreter.prototype = {
       var obj;
       if (x.target) obj=stk.pop();
       var args=[], y;
-      while((y=stk.pop())!="end of arguments") args.push(y);
+      while((y=stk.pop())!="end of arguments") {
+        if (y==undefined) {console.log("BUG!:" + this.command.toSource());this.command=[];return;}  // DEBUG
+        args.push(y);
+      }
       if (obj) {
         var methods = obj.clz.methods;
         if (x.name in methods) {
@@ -140,7 +144,7 @@ RubyEngine.Interpreter.prototype = {
           stk.push(obj.clz.methods["method_missing"].apply(this, [obj, args, x.block]));
         }
       } else {
-        stk.push(RubyEngine.Interpreter.KernelMethod[x.name].apply(this, [args]));
+        stk.push(RubyEngine.Interpreter.KernelMethod[x.name].apply(this, [args]));  // TODO: scope
       }
 		} else if (RubyEngine.Node.BlockIterator.prototype.isPrototypeOf(x)) {
       x.next.apply(this, [x]);
