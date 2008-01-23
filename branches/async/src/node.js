@@ -74,12 +74,12 @@ RubyEngine.Node.Expression.prototype.toSource = function(){return this.type+"'"+
 RubyEngine.Node.BlockIterator = function(block, iterator) {
   this.block = block;
   this.iterator = iterator;
-  if (block.vars) varname = block.vars[0].name;
 }
 RubyEngine.Node.BlockIterator.prototype = {
   "next": function(self){
-    this.scope.pushLevel();
-    if(self.iterator.apply(this, [self])) {
+    var args;
+    if(args=self.iterator.apply(this, [self])) {
+      this.scope.pushLevel(args);
       this.command.push(self);
       this.command.push("popLevel");
       this.compile(self.block.block);

@@ -50,15 +50,16 @@ RubyEngine.Scope.prototype = {
       if(args) for (var i=0;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
       return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, jsargs));
     } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
-      var block = ref;
-      var newargs = {};
-      if (block.vars) {
-        for (var i=0;i<block.vars.length;i++) {
-          newargs[block.vars[i].name] = this.run(args[i]);
+      if (ref.scope!=RubyEngine.Const.SameScope) {
+        var newargs = {},v=ref.vars
+        if(v) for(var i=0;i<v.length;i++) newargs[v[i].name]=args[i];
+        if(ref.scope==RubyEngine.Const.LevelScope){
+          this.scope.pushLevel(newargs);
+        } else {
+          this.scope.pushScope(newargs);
         }
       }
-      this.scope.pushScope(newargs);
-      var ret = this.run(block.block);
+      var ret = ref.block;
       this.scope.popScope();
       return ret;
     } else if (refflag) {

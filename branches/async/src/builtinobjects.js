@@ -89,9 +89,10 @@ RubyEngine.RubyObject.Numeric.methods = {
     if (!block) return null;  // TODO: error
     var b = new RubyEngine.Node.BlockIterator(block, function(b){
       if(b.now<=b.to) {
-        if(b.varname) this.scope.substitute(b.varname, new RubyEngine.RubyObject.Numeric(b.now));
+        var args={}
+        if(b.varname) args[b.varname]=new RubyEngine.RubyObject.Numeric(b.now);
         b.now++;
-        return b;
+        return args;
       }
     });
     b.to=args[0].num;

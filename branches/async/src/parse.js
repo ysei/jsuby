@@ -99,13 +99,16 @@ RubyEngine.Parser.prototype.arg = function() {
       z = RegExp.$1;
 			this.body = RegExp.rightContext;
 			if ((y=this.arg())!=undefined) {
-        if (z) y = new RubyEngine.Node.Expression([x, new RubyEngine.Node.Operator(z), y]);
         if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
-          x = x.clone();
+          if (z) y = new RubyEngine.Node.Expression([x.clone(), new RubyEngine.Node.Operator(z), y]);
           x.name += "=";
           if (x.args) { x.args.push(y); } else { x.args = [y]; }
           return x;
         } else {
+          if (z) {
+            var r = new RubyEngine.Node.Ref(x.name);
+            y = new RubyEngine.Node.Expression([r, new RubyEngine.Node.Operator(z), y]);
+          }
           return new RubyEngine.Node.Method("*let", null, [x, y]);
         }
       }
@@ -286,20 +289,20 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		x = RegExp.$1;
 		if ((y = this.arg())!=undefined && this.then()) {
 			if (z=this.compstmt()) {
-			  var args = [y, z];
+			  var args = [y, new RubyEngine.Node.Block(null, z)];
 				while (this.body.match(/^[ \s]*(elsif)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
 					if ((y = this.arg()) && this.then()) {
 						if (!(z=this.compstmt())) { this.body = prebody2; break; }
-						args.push(y, z)
+						args.push(y, new RubyEngine.Node.Block(null, z))
 					}
 				}
 				if (this.body.match(/^[ \s]*(else)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
 					if (z=this.compstmt()) { 
-						args.push(true, z)
+						args.push(true, new RubyEngine.Node.Block(null, z))
 					} else {
 						this.body = prebody2
 					}

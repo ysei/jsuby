@@ -13,7 +13,7 @@ RubyEngine.Interpreter.KernelMethod = {
   "*eval": function(args) {
     var src = args[0].str;
     var nodes = this.parser.parse(src);
-    return this.run(nodes);
+    this.compile(nodes);
   },
   "puts": function(args) {
     if (args && args.length > 0) {
@@ -25,7 +25,7 @@ RubyEngine.Interpreter.KernelMethod = {
   "if": function(args) {
     for(var idx=0;idx<args.length;idx+=2) {
       var cond = args[idx];
-      if (cond || cond===0 || cond==="") return this.run(args[idx+1]);
+      if (cond || cond===0 || cond==="") {this.compile(args[idx+1].block); break;}
     }
   },
   "*let": function(args) {
