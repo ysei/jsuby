@@ -141,19 +141,6 @@ console.log("----");
         }
       } else {
         this.scope.call.apply(this, [x.name, args, x.block, false]);
-/*
-        var method=this.scope.reference(x.name);
-        if (typeof(method) == "function") {
-          stk.push(method.apply(this, [args, x.block]));
-        } else {
-          this.command.push("popScope");
-          this.compile(method.block);
-          var vars=method.vars, _args={};
-          for(var i=0;i<vars.length && i<args.length;i++) _args[vars[i].name]=args[i];
-          this.scope.pushScope(_args);
-        }
-*/
-
       }
 		} else if (RubyEngine.Node.BlockIterator.prototype.isPrototypeOf(x)) {
       x.next.apply(this, [x]);
@@ -246,7 +233,11 @@ console.log("----");
   call: function(name, args){
     var newargs=[];
     for(var i=0;i<args.length;i++) newargs.push(RubyEngine.RubyObject.js2r(args[i]));
-    return this.scope.call.apply(this, [name, newargs, null, true]).toValue();
+    this.scope.call.apply(this, [name, newargs, null, true]);
+    while(this.command.length>0) this.loop(false);
+    var ret = this.stack.pop();
+    if (typeof(ret)=="object" && "toValue" in ret) return ret.toValue();
+    return ret;
   },
   put: function(name, value){
     this.scope.globalsubstitute(name, RubyEngine.RubyObject.js2r(value));
