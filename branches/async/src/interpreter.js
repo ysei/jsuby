@@ -44,7 +44,7 @@ RubyEngine.Scope.prototype = {
   call: function(name, args, block, refflag) {
     var ref = this.scope.reference(name);
     if (typeof(ref) == "function") {
-      this.stack.push(ref.apply(this, [args, block]));
+      ref.apply(this, [args, block]);
     } else if (RubyEngine.RubyObject.JSObject.prototype.isPrototypeOf(ref)) {
       var jsargs = [];
       if(args) for (var i=0;i<args.length;i++) jsargs.push( args[i].toValue() );

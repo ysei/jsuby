@@ -29,14 +29,14 @@ RubyEngine.Interpreter.KernelMethod = {
     }
   },
   "*let": function(args) {
-    return this.scope.substitute(args[0].name, args[1]);
+    this.stack.push(this.scope.substitute(args[0].name, args[1]));
   },
   "*concat": function(args) {
     var st="";
     if (args && args.length > 0) {
       for(var i=0;i<args.length;i++) st+=args[i].toString();
     }
-    return new RubyEngine.RubyObject.String(st);
+    this.stack.push(new RubyEngine.RubyObject.String(st));
   },
   "sleep": function(args) {
     this.sleep = args[0];
