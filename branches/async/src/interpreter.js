@@ -44,28 +44,22 @@ RubyEngine.Scope.prototype = {
   call: function(name, args, block, refflag) {
     var ref = this.scope.reference(name);
     if (typeof(ref) == "function") {
-      return ref.apply(this, [args, block]);
+      this.stack.push(ref.apply(this, [args, block]));
     } else if (RubyEngine.RubyObject.JSObject.prototype.isPrototypeOf(ref)) {
       var jsargs = [];
-      if(args) for (var i=0;i<args.length;i++) jsargs.push( this.run(args[i]).toValue() );
-      return RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, jsargs));
+      if(args) for (var i=0;i<args.length;i++) jsargs.push( args[i].toValue() );
+      this.stack.push(RubyEngine.RubyObject.js2r(ref.obj.apply(ref.obj, jsargs)));
     } else if (RubyEngine.Node.Block.prototype.isPrototypeOf(ref)) {
-      if (ref.scope!=RubyEngine.Const.SameScope) {
-        var newargs = {},v=ref.vars
-        if(v) for(var i=0;i<v.length;i++) newargs[v[i].name]=args[i];
-        if(ref.scope==RubyEngine.Const.LevelScope){
-          this.scope.pushLevel(newargs);
-        } else {
-          this.scope.pushScope(newargs);
-        }
-      }
-      var ret = ref.block;
-      this.scope.popScope();
-      return ret;
+      this.command.push("popScope");
+      this.compile(ref.block);
+      var vars=ref.vars, _args={};
+      for(var i=0;i<vars.length && i<args.length;i++) _args[vars[i].name]=args[i];
+      this.scope.pushScope(_args);
     } else if (refflag) {
-      return ref;
+      this.stack.push(ref);
+    } else {
+      this.stack.push(new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"'", name));
     }
-    return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+node.name+"'", node.name);
   }
 }
 
@@ -99,7 +93,7 @@ RubyEngine.Interpreter.prototype = {
   compile: function(x) {
 		if (Array.prototype.isPrototypeOf(x)) {
       if (x.length==1) {
-        this.stack.pop();  // anxious...
+        //this.stack.pop();  // anxious...
         this.compile(x[0]);
       } else {
   			this.command.push( new RubyEngine.Node.Iterator(x) );
@@ -129,11 +123,12 @@ RubyEngine.Interpreter.prototype = {
         this.compile(y);
       }
 		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
+console.log("----");
       var obj;
       if (x.target) obj=stk.pop();
       var args=[], y;
       while((y=stk.pop())!="end of arguments") {
-        if (y==undefined) {console.log("BUG!:" + this.command.toSource());this.command=[];return;}  // DEBUG
+        if (y==undefined) {console.log("BUG!: no 'end of arguments'" + this.command.toSource());this.command=[];return;}  // DEBUG
         args.push(y);
       }
       if (obj) {
@@ -145,12 +140,32 @@ RubyEngine.Interpreter.prototype = {
           stk.push(obj.clz.methods["method_missing"].apply(this, [obj, args, x.block]));
         }
       } else {
-        stk.push(RubyEngine.Interpreter.KernelMethod[x.name].apply(this, [args]));  // TODO: scope
+        this.scope.call.apply(this, [x.name, args, x.block, false]);
+/*
+        var method=this.scope.reference(x.name);
+        if (typeof(method) == "function") {
+          stk.push(method.apply(this, [args, x.block]));
+        } else {
+          this.command.push("popScope");
+          this.compile(method.block);
+          var vars=method.vars, _args={};
+          for(var i=0;i<vars.length && i<args.length;i++) _args[vars[i].name]=args[i];
+          this.scope.pushScope(_args);
+        }
+*/
+
       }
 		} else if (RubyEngine.Node.BlockIterator.prototype.isPrototypeOf(x)) {
       x.next.apply(this, [x]);
 		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
-      stk.push(this.scope.reference(x.name));
+      var y=this.scope.reference(x.name);
+      if (RubyEngine.Node.Block.prototype.isPrototypeOf(y)) {
+        this.compile(y.block);
+      } else {
+        stk.push(y);
+      }
+
+
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {
 			case "-@":
@@ -206,10 +221,17 @@ RubyEngine.Interpreter.prototype = {
 				stk.push(stk.pop().sft(a));
 				break;
 			}
-		} else if(x=="pushLevel") {
-      this.scope.pushLevel();
-		} else if(x=="popLevel") {
-      this.scope.popLevel();
+		} else if(typeof(x)=="string") {
+      switch(x) {
+        case "popLevel":
+          this.scope.popLevel();
+          break;
+        case "popScope":
+          this.scope.popScope();
+          break;
+        default:
+    			stk.push(x);
+      }
 		} else {
 			stk.push(x);
 		}
@@ -228,25 +250,7 @@ RubyEngine.Interpreter.prototype = {
   },
   put: function(name, value){
     this.scope.globalsubstitute(name, RubyEngine.RubyObject.js2r(value));
-  },
-
-  kernelMethod: function(node){
-    var method = this.scope.reference(node.name);
-    if (typeof(method)=="function") {
-      return method.apply(this, [node.args, node.block]);
-    } else {
-  		alert("undefined method: " + node.name);
-  	}
-  },
-  objectMethod: function(node){
-//console.log(node.toSource());console.dir(node);console.trace();if(!confirm("continue?")) exit();
-    var obj;
-    if (RubyEngine.Node.Ref.prototype.isPrototypeOf(node.target)) {
-      obj = this.scope.reference(node.target.name);
-    } else {
-      obj = this.run(node.target);
-    }
-    return RubyEngine.RubyObject.call.apply(this, [obj, node.name, node.args, node.block]);
   }
+
 }
 

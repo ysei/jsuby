@@ -88,16 +88,11 @@ RubyEngine.RubyObject.Numeric.methods = {
   "upto": function(self, args, block) {
     if (!block) return null;  // TODO: error
     var b = new RubyEngine.Node.BlockIterator(block, function(b){
-      if(b.now<=b.to) {
-        var args={}
-        if(b.varname) args[b.varname]=new RubyEngine.RubyObject.Numeric(b.now);
-        b.now++;
-        return args;
-      }
+      if(b.now<=b.to)
+        return b.getargs([new RubyEngine.RubyObject.Numeric(b.now++)]);
     });
     b.to=args[0].num;
     b.now=self.num;
-    if (block.vars) b.varname = block.vars[0].name;
     this.command.push(b);
     return self;
   }
@@ -226,15 +221,13 @@ RubyEngine.RubyObject.Array.methods = {
     return ret;
   },
   "each": function(self, args, block) {
-    if (!block) return null;
-    var varname;
-    if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
-    this.scope.pushLevel();
-    for(var i=0;i<self.array.length;i++) {
-    	if (varname) this.scope.substitute(varname, self.array[i]);
-    	this.run(block.block);
-    }
-    this.scope.popLevel();
+    if (!block) return null;  // TODO: error
+    var b = new RubyEngine.Node.BlockIterator(block, function(b){
+      if(b.i<=b.array.length) return b.getargs([b.array[b.i++]]);
+    });
+    b.array=self.array;
+    b.i=0
+    this.command.push(b);
     return self;
   },
   "inject": function(self, args, block) {

@@ -84,6 +84,11 @@ RubyEngine.Node.BlockIterator.prototype = {
       this.command.push("popLevel");
       this.compile(self.block.block);
     }
+  },
+  "getargs": function(list){
+    var vars=this.block.vars, args={};
+    for(var i=0;i<vars.length && i<list.length;i++) args[vars[i].name]=list[i];
+    return args;
   }
 }
 
