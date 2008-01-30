@@ -39,7 +39,7 @@ RubyEngine.Parser.prototype.stmt = function() {
 			break;
 		}
 		ret.unshift(y);
-		ret = new RubyEngine.Node.Method(x, null, ret);
+		ret = new RubyEngine.Node.IfIterator(ret);
 	}
 	return ret;
 }
@@ -289,27 +289,27 @@ RubyEngine.Parser.prototype.primary2 = function() {
 		x = RegExp.$1;
 		if ((y = this.arg())!=undefined && this.then()) {
 			if (z=this.compstmt()) {
-			  var args = [y, new RubyEngine.Node.Block(null, z)];
+			  var args = [y, z];
 				while (this.body.match(/^[ \s]*(elsif)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
 					if ((y = this.arg()) && this.then()) {
 						if (!(z=this.compstmt())) { this.body = prebody2; break; }
-						args.push(y, new RubyEngine.Node.Block(null, z))
+						args.push(y, z)
 					}
 				}
 				if (this.body.match(/^[ \s]*(else)/)) {
 					var prebody2 = this.body;
 					this.body = RegExp.rightContext;
 					if (z=this.compstmt()) { 
-						args.push(true, new RubyEngine.Node.Block(null, z))
+						args.push(true, z)
 					} else {
 						this.body = prebody2
 					}
 				}
 				if (this.body.match(/^[ \s]*(end)/)) {
 					this.body = RegExp.rightContext;
-					return new RubyEngine.Node.Method(x, null, args);
+					return new RubyEngine.Node.IfIterator(args);
 				}
 			}
 		}

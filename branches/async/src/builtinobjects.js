@@ -231,24 +231,19 @@ RubyEngine.RubyObject.Array.methods = {
     return self;
   },
   "inject": function(self, args, block) {
-    if (!block) return null;
-    var i=0,r;
+    if (!block) return null;  // TODO: error
+    var b = new RubyEngine.Node.BlockIterator(block, function(b){
+      if(b.i<b.array.length) return b.getargs([this.stack.pop(), b.array[b.i++]]);
+    });
+    b.array=self.array;
     if(args && args.length>0){
-      r=args[0];
+      this.stack.push(args[0]);
+      b.i=0
     } else {
-      r=self.array[i++];
+      this.stack.push(self.array[0]);
+      b.i=1;
     }
-    while(i<self.array.length){
-      var newargs = {};
-      if (block.vars) {
-        if (block.vars.length>0) newargs[block.vars[0].name] = r;
-        if (block.vars.length>1) newargs[block.vars[1].name] = self.array[i++];
-      }
-      this.scope.pushLevel(newargs);
-      r = this.run(block.block);
-      this.scope.popLevel();
-    }
-    return r;
+    this.command.push(b);
   },
   "join": function(self, args, block) {
     var st = "", sep = (args&&args.length>0?args[0].str:""); // TODO: $,
@@ -273,18 +268,16 @@ RubyEngine.RubyObject.Range.prototype.toValue = function(){
   return value;
 }
 RubyEngine.RubyObject.Range.methods = {
- "each": function(self, args, block) {
-  if (!block) return null;
-  var varname;
-  if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
-  this.scope.pushLevel();
-  for(var i=self.from;i<=self.to;i++) {
-  	if (varname) this.scope.substitute(varname, new RubyEngine.RubyObject.Numeric(i));
-  	this.run(block.block);
+  "each": function(self, args, block) {
+    if (!block) return null;  // TODO: error
+    var b = new RubyEngine.Node.BlockIterator(block, function(b){
+      if(b.i<=b.to) return b.getargs([new RubyEngine.RubyObject.Numeric(b.i++)]);
+    });
+    b.i=self.from;
+    b.to=self.to;
+    this.command.push(b);
+    return self;
   }
-  this.scope.popLevel();
-  return self;
- }
 }
 
 

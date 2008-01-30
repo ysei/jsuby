@@ -107,6 +107,8 @@ RubyEngine.Interpreter.prototype = {
     	var list = x.args;
     	if(list) for (var i=0;i<list.length;i++) this.compile(list[i]);
 			this.command.push( "end of arguments" );
+		} else if (RubyEngine.Node.IfIterator.prototype.isPrototypeOf(x)) {
+      x.init.apply(this, [x]);
 		} else {
 			this.command.push( x );
 		}
@@ -123,7 +125,6 @@ RubyEngine.Interpreter.prototype = {
         this.compile(y);
       }
 		} else if (RubyEngine.Node.Method.prototype.isPrototypeOf(x)) {
-console.log("----");
       var obj;
       if (x.target) obj=stk.pop();
       var args=[], y;
@@ -132,26 +133,28 @@ console.log("----");
         args.push(y);
       }
       if (obj) {
-        var methods = obj.clz.methods;
+        var methods = obj.clz.methods, ret;
         if (x.name in methods) {
-          stk.push(obj.clz.methods[x.name].apply(this, [obj, args, x.block]));
+          ret=methods[x.name].apply(this, [obj, args, x.block]);
         } else {
           args.unshift(new RubyEngine.RubyObject.String(x.name));
-          stk.push(obj.clz.methods["method_missing"].apply(this, [obj, args, x.block]));
+          ret=methods["method_missing"].apply(this, [obj, args, x.block]);
         }
+        if(ret!=undefined) stk.push(ret);
       } else {
         this.scope.call.apply(this, [x.name, args, x.block, false]);
       }
 		} else if (RubyEngine.Node.BlockIterator.prototype.isPrototypeOf(x)) {
       x.next.apply(this, [x]);
+		} else if (RubyEngine.Node.IfIterator.prototype.isPrototypeOf(x)) {
+      x.next.apply(this, [x]);
 		} else if (RubyEngine.Node.Ref.prototype.isPrototypeOf(x)) {
-      var y=this.scope.reference(x.name);
-      if (RubyEngine.Node.Block.prototype.isPrototypeOf(y)) {
-        this.compile(y.block);
+      var ref=this.scope.reference(x.name);
+      if (typeof(ref) == "function" && !("methods" in ref)) {
+        ref.apply(this, [[], null]);
       } else {
-        stk.push(y);
+        stk.push(ref);
       }
-
 
 		} else if (RubyEngine.Node.Operator.prototype.isPrototypeOf(x)) {
 			switch (x.name) {

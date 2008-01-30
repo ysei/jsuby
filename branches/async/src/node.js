@@ -70,8 +70,34 @@ RubyEngine.Node.Expression = function(list){
 }
 RubyEngine.Node.Expression.prototype.toSource = function(){return this.type+"'"+this.list.toSource()+"'"}
 
+RubyEngine.Node.IfIterator = function(list) {
+  this.type = "IF";
+  this.list = list;
+  this.i=0;
+}
+RubyEngine.Node.IfIterator.prototype = {
+  toSource: function(){ return this.type+"{"+this.list.toSource()+"}" },
+  "init": function(self){
+    var it = new RubyEngine.Node.IfIterator(self.list);
+    this.command.push(it);
+    this.compile(it.list[it.i]);
+  },
+  "next": function(self){
+    var cond=this.stack.pop();
+    if (cond || cond===0 || cond==="") {
+      this.compile(self.list[self.i+1]);
+    } else {
+      self.i+=2;
+      if(self.i<self.list.length) {
+        this.command.push(self);
+        this.compile(self.list[self.i]);
+      }
+    }
+  }
+}
 
 RubyEngine.Node.BlockIterator = function(block, iterator) {
+  this.type = "BI";
   this.block = block;
   this.iterator = iterator;
 }
@@ -87,15 +113,16 @@ RubyEngine.Node.BlockIterator.prototype = {
   },
   "getargs": function(list){
     var vars=this.block.vars, args={};
-    for(var i=0;i<vars.length && i<list.length;i++) args[vars[i].name]=list[i];
+    if(vars) for(var i=0;i<vars.length && i<list.length;i++) args[vars[i].name]=list[i];
     return args;
   }
 }
 
 RubyEngine.Node.Iterator = function(list) {
-    this.list = list;
-    this.idx = 0;
-  },
+  this.type = "I";
+  this.list = list;
+  this.idx = 0;
+},
 RubyEngine.Node.Iterator.prototype = {
   next: function() {
     if (this.idx<this.list.length) {

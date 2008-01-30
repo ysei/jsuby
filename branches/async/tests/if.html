@@ -52,6 +52,11 @@ function testElsif() {
 	assertEquals("elsif 3", ruby.exec("x=3;" + st), "other");
 }
 
+function testElsifWithSideEffect() {
+	assertEquals("side effect 1", ruby.exec("x=0; if x>0 then 'dummy' elsif x+=1 then 'dummy' end; x;"), 1);
+	assertEquals("side effect 2", ruby.exec("x=1; if x>0 then 'dummy' elsif x+=1 then 'dummy' end; x;"), 1);
+}
+
 function testIfModifier() {
 	assertEquals("if modifier 1", ruby.exec("modifier 1"), 0);
 	assertEquals("if modifier 2", ruby.exec("modifier 20"), 21);

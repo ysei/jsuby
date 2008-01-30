@@ -22,12 +22,6 @@ RubyEngine.Interpreter.KernelMethod = {
       this.writeStdout("\n");
     }
   },
-  "if": function(args) {
-    for(var idx=0;idx<args.length;idx+=2) {
-      var cond = args[idx];
-      if (cond || cond===0 || cond==="") {this.compile(args[idx+1].block); break;}
-    }
-  },
   "*let": function(args) {
     this.stack.push(this.scope.substitute(args[0].name, args[1]));
   },
