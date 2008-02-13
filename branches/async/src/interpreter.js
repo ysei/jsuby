@@ -93,7 +93,6 @@ RubyEngine.Interpreter.prototype = {
   compile: function(x) {
 		if (Array.prototype.isPrototypeOf(x)) {
       if (x.length==1) {
-        //this.stack.pop();  // anxious...
         this.compile(x[0]);
       } else {
   			this.command.push( new RubyEngine.Node.Iterator(x) );
@@ -118,7 +117,18 @@ RubyEngine.Interpreter.prototype = {
     this.sleep=0;
     var stk=this.stack;
     var x=this.command.pop(), y;
-		if (RubyEngine.Node.Iterator.prototype.isPrototypeOf(x)) {
+		if(typeof(x)=="string") {
+      switch(x) {
+        case "popLevel":
+          this.scope.popLevel();
+          break;
+        case "popScope":
+          this.scope.popScope();
+          break;
+        default:
+    			stk.push(x);
+      }
+		} else if (RubyEngine.Node.Iterator.prototype.isPrototypeOf(x)) {
       if ((y=x.next())!=undefined) {
         this.stack.pop();  // anxious...
         this.command.push( x );
@@ -211,17 +221,6 @@ RubyEngine.Interpreter.prototype = {
 				stk.push(stk.pop().sft(a));
 				break;
 			}
-		} else if(typeof(x)=="string") {
-      switch(x) {
-        case "popLevel":
-          this.scope.popLevel();
-          break;
-        case "popScope":
-          this.scope.popScope();
-          break;
-        default:
-    			stk.push(x);
-      }
 		} else {
 			stk.push(x);
 		}

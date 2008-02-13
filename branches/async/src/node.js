@@ -89,8 +89,13 @@ RubyEngine.Node.IfIterator.prototype = {
     } else {
       self.i+=2;
       if(self.i<self.list.length) {
-        this.command.push(self);
-        this.compile(self.list[self.i]);
+        var c=self.list[self.i];
+        if (c===true) {
+          this.compile(self.list[self.i+1]);
+        } else {
+          this.command.push(self);
+          this.compile(c);
+        }
       }
     }
   }
