@@ -69,7 +69,7 @@ RubyEngine.Interpreter = function(){
 	this.stdout = "";
 	this.parser = new RubyEngine.Parser();
 	this.command = [];
-	this.stack = [null];
+	this.stack = [];
 }
 RubyEngine.Interpreter.prototype = {
   writeStdout: function(st){this.stdout += st;},

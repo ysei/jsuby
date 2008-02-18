@@ -41,7 +41,7 @@ function testEach() {
 	assertEquals("each 4", ruby.exec(" doeach 30 "), 465);
 
 	ruby.scope.clear();
-	assertEquals("scope 1", ruby.exec("x=0;(1..10).each{|x|};x"), 10);
+	assertEquals("scope 1", ruby.exec("x=0;(1..10).each{|x|};x"), 0);
 	ruby.scope.clear();
 	assertEquals("scope 2", ruby.exec("    (1..10).each{|x|};x").message, "undefined local variable or method `x'");
 }

@@ -269,7 +269,7 @@ RubyEngine.RubyObject.Range.prototype.toValue = function(){
 }
 RubyEngine.RubyObject.Range.methods = {
   "each": function(self, args, block) {
-    if (!block) return null;  // TODO: error
+    if (!block || !block.block) return self;  // TODO: error
     var b = new RubyEngine.Node.BlockIterator(block, function(b){
       if(b.i<=b.to) return b.getargs([new RubyEngine.RubyObject.Numeric(b.i++)]);
     });
