@@ -288,10 +288,10 @@ RubyEngine.RubyObject.JSObject = RubyEngine.RubyObject.inherit(RubyEngine.RubyOb
 RubyEngine.RubyObject.JSObject.prototype.toString = function(){ return this.obj.toString(); }
 RubyEngine.RubyObject.JSObject.prototype.toValue = function(){ return this.obj; }
 RubyEngine.RubyObject.JSObject.methods = {
-  "new": function(self, args, block) {
+  "new": function(_self, args, block) {
     var jsargs = [];
     if(args) for(var i=0;i<args.length;i++) jsargs.push("args["+i+"].toValue()");
-    return RubyEngine.RubyObject.js2r(eval( "new self.obj("+jsargs.join(',')+")" ));
+    return RubyEngine.RubyObject.js2r(eval( "new _self.obj("+jsargs.join(',')+")" ));
   },
   "[]": function(self, args, block) {
     return RubyEngine.RubyObject.js2r(self.obj[args[0].num]);
@@ -317,14 +317,14 @@ RubyEngine.RubyObject.JSObject.methods = {
       return args[1];
     } else {
       if (name in self.obj) {
-        if (RubyEngine.FIREFOX || RubyEngine.OPERA) { // Firefox, Opera
-          var jsargs = [];
-          for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
-          return RubyEngine.RubyObject.js2r(self.obj[name].apply(self.obj, jsargs));
-        } else { // others
+        if (RubyEngine.IE) {
           var jsargs = [];
           for (var i=1;i<args.length;i++) jsargs.push( "args["+i+"].toValue()" );
           return RubyEngine.RubyObject.js2r( eval( "self.obj[name]("+jsargs.join(',')+")" ));
+        } else { // others
+          var jsargs = [];
+          for (var i=1;i<args.length;i++) jsargs.push( args[i].toValue() );
+          return RubyEngine.RubyObject.js2r(self.obj[name].apply(self.obj, jsargs));
         }
       } else {
         return new RubyEngine.RubyObject.NameError("undefined local variable or method `"+name+"' for "+self.obj.toString(), name);
