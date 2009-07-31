@@ -297,15 +297,13 @@ RubyEngine.RubyObject.JSObject.methods = {
     return RubyEngine.RubyObject.js2r(self.obj[args[0].num]);
   },
   "each": function(self, args, block) {
-    if (!block) return null;
-    var varname;
-    if (block.vars) varname = block.vars[0].name; // TODO: multiple variables
-    this.scope.pushLevel();
-    for(var i=0;i<self.obj.length;i++) {
-    	if (varname) this.scope.substitute(varname, RubyEngine.RubyObject.js2r(self.obj[i]));
-    	this.run(block.block);
-    }
-    this.scope.popLevel();
+    if (!block || !block.block) return self;  // TODO: error
+    var b = new RubyEngine.Node.BlockIterator(block, function(b){
+      if(b.i<b.obj.length) return b.getargs([RubyEngine.RubyObject.js2r(b.obj[b.i++])]);
+    });
+    b.obj=self.obj;
+    b.i=0
+    this.command.push(b);
     return self;
   },
   "method_missing": function(self, args, block) {
